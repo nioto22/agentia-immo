@@ -161,9 +161,7 @@ if st.session_state.calendar_content:
     st.markdown("##### Votre calendrier editorial")
 
     # Display in a styled container
-    st.markdown('<div class="persona-output">', unsafe_allow_html=True)
-    st.markdown(st.session_state.calendar_content)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="persona-output">\n\n{st.session_state.calendar_content}\n\n</div>', unsafe_allow_html=True)
 
     st.markdown("")
 

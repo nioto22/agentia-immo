@@ -327,6 +327,44 @@ if not st.session_state.get("api_key"):
     st.stop()
 
 
+# --- DEMO PROFILES (load pre-built personas for demo) ---
+if not st.session_state.interview_started and not st.session_state.persona_generated:
+    DEMO_DIR = DATA_DIR / "demo"
+    DEMO_PROFILES = {
+        "— Choisir un profil demo —": None,
+        "Sofia Mendes — Luxe, Chiado/Principe Real": "demo-sofia-mendes-persona.md",
+        "Marco Santos — Residentiel, Lisboa": "demo-marco-santos-persona.md",
+        "Ana & Pedro Costa — Equipe, Multi-segment": "demo-ana-pedro-costa-persona.md",
+    }
+
+    st.markdown("##### Charger un profil demo")
+    st.caption("Chargez un profil pre-construit pour tester les Modules 3 et 4 sans refaire l'interview.")
+
+    demo_choice = st.selectbox(
+        "Profil demo",
+        list(DEMO_PROFILES.keys()),
+        label_visibility="collapsed",
+    )
+
+    if demo_choice != "— Choisir un profil demo —" and DEMO_PROFILES[demo_choice]:
+        demo_path = DEMO_DIR / DEMO_PROFILES[demo_choice]
+        if demo_path.exists():
+            if st.button("Charger ce profil", type="primary", use_container_width=True):
+                demo_content = demo_path.read_text(encoding="utf-8")
+                st.session_state.persona_content = demo_content
+                st.session_state.persona_generated = True
+                st.session_state.interview_started = True
+                st.session_state.messages = [
+                    {"role": "assistant", "content": f"Profil demo charge : **{demo_choice.split(' — ')[0]}**"},
+                    {"role": "assistant", "content": demo_content},
+                ]
+                st.rerun()
+        else:
+            st.warning(f"Fichier demo introuvable : {demo_path.name}")
+
+    st.markdown("---")
+    st.markdown("##### Ou : Commencer une interview")
+
 # --- SOCIAL PROFILE INPUT (before interview starts) ---
 if not st.session_state.interview_started:
     st.markdown("##### Accelerez l'interview (optionnel)")

@@ -185,22 +185,9 @@ def render_sidebar(module_name="", module_help=""):
         st.divider()
 
         if module_help:
-            st.markdown(f"""
-            <div class="sidebar-info">
-                <h4>{module_name}</h4>
-                {module_help}
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(f'<div class="sidebar-info"><h4>{module_name}</h4>{module_help}</div>', unsafe_allow_html=True)
 
-        st.markdown("""
-        <div class="sidebar-info">
-            <h4>Modules</h4>
-            <p>1. Veille & Benchmark</p>
-            <p><strong>2. Profil & Persona</strong></p>
-            <p><strong>3. Calendrier Editorial</strong></p>
-            <p><strong>4. Creation de Contenu</strong></p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-info"><h4>Modules</h4><p><strong>1. Veille & Benchmark</strong></p><p><strong>2. Profil & Persona</strong></p><p><strong>3. Calendrier Editorial</strong></p><p><strong>4. Creation de Contenu</strong></p></div>', unsafe_allow_html=True)
 
         st.divider()
 
@@ -249,6 +236,11 @@ def get_persona():
     st.warning("Aucun profil de communication en session. Chargez un fichier ou completez d'abord le Module 2.")
     persona = load_persona_from_upload()
     return persona
+
+
+def load_benchmark_from_session():
+    """Try to load benchmark preferences from session state (set by Module 1)."""
+    return st.session_state.get("benchmark_preferences", None)
 
 
 def load_calendar_from_session():
