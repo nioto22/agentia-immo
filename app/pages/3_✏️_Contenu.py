@@ -23,6 +23,7 @@ from utils import (
     render_sidebar,
     check_api_key,
     get_persona,
+    load_benchmark_from_session,
     load_calendar_from_session,
     extract_agent_name,
     save_to_data,
@@ -205,6 +206,17 @@ if st.button(
 
     if calendar_content:
         user_message += f"\n**Contexte calendrier editorial (pour coherence) :**\n{calendar_content[:1500]}\n"
+
+    # Inject benchmark preferences if available
+    prefs = load_benchmark_from_session()
+    if prefs:
+        user_message += f"\n**PREFERENCES DE L'AGENT (Module 1 - Veille) :**\n"
+        user_message += f"- Segment : {prefs.get('segment', 'Non defini')}\n"
+        user_message += f"- Localisation : {prefs.get('location', 'Non definie')}\n"
+        user_message += f"- Experience : {prefs.get('experience', 'Non definie')}\n"
+        user_message += f"- Formats preferes : {', '.join(prefs.get('formats_preferes', []))}\n"
+        user_message += f"- Piliers prioritaires : {', '.join(prefs.get('piliers_preferes', []))}\n"
+        user_message += "\nAdapte le contenu a ce segment et ces preferences.\n"
 
     user_message += f"\n---\n\n**PROFIL DE COMMUNICATION DE L'AGENT :**\n\n{persona_content}"
 
