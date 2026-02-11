@@ -119,3 +119,45 @@ Genere le calendrier dans ce format exact :
 ---
 
 *Calendrier genere par AgentIA (iRL-tech) — Planifiez, publiez, performez.*
+
+---
+
+## DONNEES STRUCTUREES (OBLIGATOIRE)
+
+Apres le markdown ci-dessus, ajoute TOUJOURS un bloc JSON entre les balises `<!--CALENDAR_JSON` et `CALENDAR_JSON-->`. Ce bloc permet l'affichage visuel interactif du calendrier.
+
+Format exact :
+
+<!--CALENDAR_JSON
+{
+  "weeks": [
+    {
+      "title": "Semaine 1 : [theme]",
+      "days": [
+        {
+          "weekday": "Lun",
+          "date": "10/02",
+          "platform": "Instagram",
+          "format": "Carrousel",
+          "pillar": "Market Insights",
+          "subject": "Titre/description courte du contenu",
+          "time": "18h-20h",
+          "hashtags": "Fixes + Rotation A",
+          "rest": false
+        }
+      ],
+      "stories": [
+        "Lun : idee story courte",
+        "Mar : idee story courte"
+      ]
+    }
+  ]
+}
+CALENDAR_JSON-->
+
+Regles JSON :
+- Un objet par jour dans "days" (y compris les jours de repos avec "rest": true)
+- Pour les jours de repos : "platform": "", "format": "Repos", "pillar": "", "subject": "", "time": "", "hashtags": "", "rest": true
+- "weekday" : Lun, Mar, Mer, Jeu, Ven, Sam, Dim
+- "platform" : Instagram, LinkedIn, Facebook (exactement ces noms)
+- Le JSON doit etre valide et parsable
