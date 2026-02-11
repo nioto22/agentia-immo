@@ -43,52 +43,71 @@ inject_css()
 
 CALENDAR_CSS = """
 <style>
-    /* Agenda grid cell */
-    .cal-cell {
-        background: #FFFFFF; border: 1px solid #e8e0d6; border-radius: 8px;
-        padding: 0.5rem; min-height: 120px; position: relative;
-        font-family: 'Inter', sans-serif;
+    /* --- Modern card (Option E) --- */
+    .mc {
+        background: #FFFFFF; border-radius: 12px; overflow: hidden;
+        border: 1px solid #e8e0d6; margin-bottom: 0.25rem;
     }
-    .cal-cell-rest {
-        background: #f8f8f6; border: 1px dashed #ddd; border-radius: 8px;
-        padding: 0.5rem; min-height: 120px; opacity: 0.6;
-        font-family: 'Inter', sans-serif;
-    }
-    .cal-date {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.3rem; font-weight: 700; color: #B87333; line-height: 1;
-    }
-    .cal-weekday {
-        font-size: 0.6rem; color: #827568; text-transform: uppercase;
-        font-weight: 600; letter-spacing: 0.05em;
-    }
-    .cal-platform {
-        display: inline-block; padding: 1px 6px; border-radius: 100px;
-        font-size: 0.55rem; font-weight: 700; text-transform: uppercase;
-        margin-top: 0.3rem;
-    }
-    .cal-platform-instagram { background: #fce4ec; color: #c2185b; }
-    .cal-platform-linkedin { background: #e3f2fd; color: #1565c0; }
-    .cal-platform-facebook { background: #e8eaf6; color: #283593; }
-    .cal-format {
-        font-size: 0.65rem; color: #B87333; font-weight: 600; margin-top: 0.2rem;
-    }
-    .cal-subject {
-        font-size: 0.62rem; color: #555; line-height: 1.3; margin-top: 0.15rem;
-    }
-    .cal-pillar-bar {
-        position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
-        border-radius: 0 0 8px 8px;
+    .mc-rest {
+        background: #FFFFFF; border-radius: 12px; overflow: hidden;
+        border: 1px dashed #ddd; margin-bottom: 0.25rem; opacity: 0.5;
     }
 
-    /* Modern card (popover detail) */
-    .card-number {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2rem; font-weight: 700; color: #B87333; line-height: 1;
+    /* Top row: big number + weekday + platform */
+    .mc-top {
+        padding: 0.65rem 0.85rem 0.4rem; display: flex; align-items: center; gap: 0.65rem;
     }
-    .card-pillar-tag {
-        display: inline-block; padding: 2px 10px; border-radius: 4px;
-        font-size: 0.65rem; font-weight: 600; color: #fff;
+    .mc-num {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2rem; font-weight: 700; color: #B87333; line-height: 1; min-width: 36px;
+    }
+    .mc-num-rest { color: #ccc; }
+    .mc-weekday {
+        font-size: 0.7rem; color: #827568; text-transform: uppercase;
+        font-weight: 600; letter-spacing: 0.05em;
+    }
+    .mc-badges { display: flex; gap: 0.35rem; flex-wrap: wrap; align-items: center; }
+
+    /* Platform badge */
+    .mc-plat {
+        display: inline-block; padding: 2px 8px; border-radius: 100px;
+        font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .mc-plat-instagram { background: #fce4ec; color: #c2185b; }
+    .mc-plat-linkedin { background: #e3f2fd; color: #1565c0; }
+    .mc-plat-facebook { background: #e8eaf6; color: #283593; }
+
+    /* Format badge */
+    .mc-fmt {
+        display: inline-block; padding: 2px 8px; border-radius: 100px;
+        font-size: 0.65rem; font-weight: 600; background: #F5F0E6; color: #9A5F2A;
+    }
+
+    /* Body: short description */
+    .mc-body {
+        padding: 0 0.85rem 0.5rem; font-size: 0.78rem; color: #444; line-height: 1.4;
+        border-top: 1px solid #f0ece6;
+    }
+
+    /* Footer: time + pillar */
+    .mc-foot {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0.35rem 0.85rem; background: #fafaf8; font-size: 0.65rem; color: #827568;
+    }
+    .mc-pillar {
+        display: inline-block; padding: 2px 8px; border-radius: 4px;
+        font-size: 0.6rem; font-weight: 600; color: #fff;
+    }
+
+    /* Popover detail card */
+    .pop-num {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2.5rem; font-weight: 700; color: #B87333; line-height: 1;
+    }
+    .pop-pillar {
+        display: inline-block; padding: 3px 12px; border-radius: 6px;
+        font-size: 0.75rem; font-weight: 600; color: #fff;
     }
 
     /* Stories section */
@@ -109,9 +128,9 @@ CALENDAR_CSS = """
     /* Week title */
     .week-title {
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 1rem; font-weight: 700; color: #171412;
+        font-size: 1.05rem; font-weight: 700; color: #171412;
         padding-bottom: 0.4rem; border-bottom: 2px solid #B87333;
-        margin: 1.25rem 0 0.6rem;
+        margin: 1.5rem 0 0.75rem;
     }
     .week-title:first-child { margin-top: 0; }
 </style>
@@ -172,8 +191,99 @@ def get_markdown_content(content):
     return re.sub(r'<!--CALENDAR_JSON.*?CALENDAR_JSON-->', '', content, flags=re.DOTALL).strip()
 
 
+MAX_SUBJECT_LEN = 70  # chars shown on card, full text in popover
+
+
+def _render_day_card(day, week_idx, day_idx):
+    """Render a single modern card (Option E) for one day."""
+    is_rest = day.get("rest", False)
+    date_str = day.get("date", "")
+    day_num = date_str.split("/")[0].strip() if "/" in date_str else date_str
+    weekday = day.get("weekday", "")
+    platform = day.get("platform", "")
+    fmt = day.get("format", "")
+    subject = day.get("subject", "")
+    pillar = day.get("pillar", "")
+    time_slot = day.get("time", "")
+    hashtags = day.get("hashtags", "")
+    pillar_key = classify_pillar(pillar)
+    pillar_color = PILLAR_COLORS.get(pillar_key, PILLAR_COLORS["default"])
+    plat_class = f"mc-plat-{platform.lower()}" if platform else ""
+
+    if is_rest:
+        st.markdown(f"""
+        <div class="mc-rest">
+            <div class="mc-top">
+                <div class="mc-num mc-num-rest">{day_num}</div>
+                <div>
+                    <div class="mc-weekday">{weekday}</div>
+                </div>
+            </div>
+            <div class="mc-body" style="text-align:center; color:#aaa; padding:0.5rem 0.85rem 0.75rem;">
+                Repos — Stories uniquement
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        return
+
+    # Truncate subject for card
+    subject_short = (subject[:MAX_SUBJECT_LEN] + "...") if len(subject) > MAX_SUBJECT_LEN else subject
+
+    # Card HTML
+    pillar_html = f'<span class="mc-pillar" style="background:{pillar_color}">{pillar}</span>' if pillar else ""
+    time_html = f'<span>{time_slot}</span>' if time_slot else "<span></span>"
+
+    st.markdown(f"""
+    <div class="mc">
+        <div class="mc-top">
+            <div class="mc-num">{day_num}</div>
+            <div>
+                <div class="mc-weekday">{weekday}</div>
+                <div class="mc-badges">
+                    <span class="mc-plat {plat_class}">{platform}</span>
+                    <span class="mc-fmt">{fmt}</span>
+                </div>
+            </div>
+        </div>
+        <div class="mc-body">{subject_short}</div>
+        <div class="mc-foot">
+            {time_html}
+            {pillar_html}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Popover with full detail
+    with st.popover("Voir le detail", use_container_width=True):
+        # Header: big number + meta
+        pcol1, pcol2 = st.columns([1, 4])
+        with pcol1:
+            st.markdown(f'<div class="pop-num">{day_num}</div>', unsafe_allow_html=True)
+        with pcol2:
+            st.markdown(f"**{weekday}** {date_str}")
+            badges_md = ""
+            if platform:
+                badges_md += f'<span class="mc-plat {plat_class}">{platform}</span> '
+            if fmt:
+                badges_md += f'<span class="mc-fmt">{fmt}</span> '
+            if pillar:
+                badges_md += f'<span class="pop-pillar" style="background:{pillar_color}">{pillar}</span>'
+            st.markdown(badges_md, unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # Full subject
+        st.markdown(f"**Contenu :** {subject}")
+
+        # Details
+        if time_slot:
+            st.markdown(f"**Horaire :** {time_slot}")
+        if hashtags:
+            st.markdown(f"**Hashtags :** {hashtags}")
+
+
 def render_visual_calendar(cal_data):
-    """Render the visual agenda grid (Option D) with popover detail (Option E)."""
+    """Render modern card calendar (Option E) with 3 cards per row."""
 
     # Legend
     st.markdown("""
@@ -187,7 +297,6 @@ def render_visual_calendar(cal_data):
     """, unsafe_allow_html=True)
 
     for week_idx, week in enumerate(cal_data.get("weeks", [])):
-        # Week title
         week_title = week.get("title", f"Semaine {week_idx + 1}")
         st.markdown(f'<div class="week-title">{week_title}</div>', unsafe_allow_html=True)
 
@@ -195,124 +304,13 @@ def render_visual_calendar(cal_data):
         if not days:
             continue
 
-        # Grid: 7 columns (or fewer if less days)
-        num_cols = min(len(days), 7)
-        cols = st.columns(num_cols)
-
-        for i, day in enumerate(days[:7]):
-            col = cols[i % num_cols]
-            is_rest = day.get("rest", False)
-            pillar_key = classify_pillar(day.get("pillar", ""))
-            pillar_color = PILLAR_COLORS.get(pillar_key, PILLAR_COLORS["default"])
-            platform = day.get("platform", "")
-            platform_class = f"cal-platform-{platform.lower()}" if platform else ""
-            date_str = day.get("date", "")
-            # Extract just the day number for the big display
-            day_num = date_str.split("/")[0] if "/" in date_str else date_str
-            weekday = day.get("weekday", "")
-
-            with col:
-                if is_rest:
-                    # Rest day — simple display
-                    st.markdown(f"""
-                    <div class="cal-cell-rest">
-                        <div class="cal-weekday">{weekday}</div>
-                        <div class="cal-date" style="color:#ccc">{day_num}</div>
-                        <div style="text-align:center; color:#aaa; font-size:0.7rem; margin-top:1rem;">Repos</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    # Compact cell (Option D)
-                    subject_short = (day.get("subject", "")[:55] + "...") if len(day.get("subject", "")) > 55 else day.get("subject", "")
-                    st.markdown(f"""
-                    <div class="cal-cell">
-                        <div class="cal-weekday">{weekday}</div>
-                        <div class="cal-date">{day_num}</div>
-                        <span class="cal-platform {platform_class}">{platform}</span>
-                        <div class="cal-format">{day.get("format", "")}</div>
-                        <div class="cal-subject">{subject_short}</div>
-                        <div class="cal-pillar-bar" style="background:{pillar_color}"></div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                    # Popover with Option E detail card
-                    with st.popover("Detail", use_container_width=True):
-                        # Big number + weekday
-                        pcol1, pcol2 = st.columns([1, 3])
-                        with pcol1:
-                            st.markdown(f'<div class="card-number">{day_num}</div>', unsafe_allow_html=True)
-                            st.caption(weekday)
-                        with pcol2:
-                            if platform:
-                                plat_css = platform_class.replace("cal-", "")
-                                st.markdown(f'<span class="cal-platform {platform_class}">{platform}</span>', unsafe_allow_html=True)
-                            pillar_label = day.get("pillar", "")
-                            if pillar_label:
-                                st.markdown(f'<span class="card-pillar-tag" style="background:{pillar_color}">{pillar_label}</span>', unsafe_allow_html=True)
-
-                        st.markdown("---")
-                        st.markdown(f"**{day.get('format', '')}**")
-                        st.markdown(day.get("subject", ""))
-
-                        if day.get("time"):
-                            st.caption(f"Horaire : {day['time']}")
-                        if day.get("hashtags"):
-                            st.caption(f"Hashtags : {day['hashtags']}")
-
-        # Overflow days (if week has more than 7 days)
-        if len(days) > 7:
-            extra_cols = st.columns(min(len(days) - 7, 7))
-            for i, day in enumerate(days[7:]):
-                col = extra_cols[i % len(extra_cols)]
-                is_rest = day.get("rest", False)
-                pillar_key = classify_pillar(day.get("pillar", ""))
-                pillar_color = PILLAR_COLORS.get(pillar_key, PILLAR_COLORS["default"])
-                platform = day.get("platform", "")
-                platform_class = f"cal-platform-{platform.lower()}" if platform else ""
-                date_str = day.get("date", "")
-                day_num = date_str.split("/")[0] if "/" in date_str else date_str
-                weekday = day.get("weekday", "")
-
-                with col:
-                    if is_rest:
-                        st.markdown(f"""
-                        <div class="cal-cell-rest">
-                            <div class="cal-weekday">{weekday}</div>
-                            <div class="cal-date" style="color:#ccc">{day_num}</div>
-                            <div style="text-align:center; color:#aaa; font-size:0.7rem; margin-top:1rem;">Repos</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        subject_short = (day.get("subject", "")[:55] + "...") if len(day.get("subject", "")) > 55 else day.get("subject", "")
-                        st.markdown(f"""
-                        <div class="cal-cell">
-                            <div class="cal-weekday">{weekday}</div>
-                            <div class="cal-date">{day_num}</div>
-                            <span class="cal-platform {platform_class}">{platform}</span>
-                            <div class="cal-format">{day.get("format", "")}</div>
-                            <div class="cal-subject">{subject_short}</div>
-                            <div class="cal-pillar-bar" style="background:{pillar_color}"></div>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                        with st.popover("Detail", use_container_width=True):
-                            pcol1, pcol2 = st.columns([1, 3])
-                            with pcol1:
-                                st.markdown(f'<div class="card-number">{day_num}</div>', unsafe_allow_html=True)
-                                st.caption(weekday)
-                            with pcol2:
-                                if platform:
-                                    st.markdown(f'<span class="cal-platform {platform_class}">{platform}</span>', unsafe_allow_html=True)
-                                pillar_label = day.get("pillar", "")
-                                if pillar_label:
-                                    st.markdown(f'<span class="card-pillar-tag" style="background:{pillar_color}">{pillar_label}</span>', unsafe_allow_html=True)
-                            st.markdown("---")
-                            st.markdown(f"**{day.get('format', '')}**")
-                            st.markdown(day.get("subject", ""))
-                            if day.get("time"):
-                                st.caption(f"Horaire : {day['time']}")
-                            if day.get("hashtags"):
-                                st.caption(f"Hashtags : {day['hashtags']}")
+        # Render cards in rows of 3
+        for row_start in range(0, len(days), 3):
+            row_days = days[row_start:row_start + 3]
+            cols = st.columns(3)
+            for col_idx, day in enumerate(row_days):
+                with cols[col_idx]:
+                    _render_day_card(day, week_idx, row_start + col_idx)
 
         # Stories
         stories = week.get("stories", [])
