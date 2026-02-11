@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentIA — Calendrier : Options visuelles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --copper: #B87333;
+            --copper-light: rgba(184,115,51,0.12);
+            --copper-bg: #F5F0E6;
+            --bg: #FAFAF8;
+            --dark: #171412;
+            --muted: #827568;
+            --card-bg: #FFFFFF;
+            --border: #e8e0d6;
+            --instagram: #c2185b;
+            --instagram-bg: #fce4ec;
+            --linkedin: #1565c0;
+            --linkedin-bg: #e3f2fd;
+            --pillar-property: #E65100;
+            --pillar-market: #1565C0;
+            --pillar-behind: #6A1B9A;
+            --pillar-lifestyle: #2E7D32;
+            --pillar-success: #F9A825;
+            --rest-bg: #f5f5f5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a1a; font-family: 'Inter', sans-serif; color: var(--dark); }
+
+        /* --- Page layout --- */
+        .page-header {
+            background: linear-gradient(135deg, #2a2218 0%, #1a1a1a 100%);
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+            border-bottom: 3px solid var(--copper);
+        }
+        .page-header h1 { font-family: 'Space Grotesk'; color: #fff; font-size: 2rem; font-weight: 700; }
+        .page-header p { color: #aaa; margin-top: 0.5rem; font-size: 0.95rem; }
+        .page-header .badge {
+            display: inline-block; background: rgba(184,115,51,0.25); color: var(--copper);
+            padding: 4px 14px; border-radius: 100px; font-size: 0.7rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;
+        }
+
+        .option-section {
+            max-width: 900px; margin: 3rem auto; padding: 0 1.5rem;
+        }
+        .option-label {
+            font-family: 'Space Grotesk'; color: #fff; font-size: 1.4rem; font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .option-desc { color: #999; font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+        /* --- Shared card frame (simulates Streamlit persona-output) --- */
+        .frame {
+            background: var(--bg); border-radius: 16px; overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .frame-inner {
+            background: var(--card-bg); border: 2px solid var(--copper); border-radius: 12px;
+            padding: 1.5rem; margin: 1.5rem; box-shadow: 0 4px 12px rgba(184,115,51,0.08);
+        }
+
+        /* =======================================
+           OPTION A — Grid Cards (current-ish but better)
+           ======================================= */
+        .grid-week-title {
+            font-family: 'Space Grotesk'; font-size: 1.1rem; font-weight: 700;
+            color: var(--dark); margin: 1.5rem 0 0.75rem; padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--copper);
+        }
+        .grid-week-title:first-child { margin-top: 0; }
+
+        .grid-cards { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+
+        .grid-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 0.6rem; font-size: 0.72rem; min-height: 140px;
+            display: flex; flex-direction: column; position: relative;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .grid-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .grid-card.rest {
+            background: var(--rest-bg); border-style: dashed; opacity: 0.6;
+        }
+        .grid-card-date {
+            font-weight: 700; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.4rem;
+        }
+        .grid-card-day { color: var(--dark); font-size: 0.85rem; font-weight: 600; }
+        .grid-card-platform {
+            display: inline-block; padding: 1px 6px; border-radius: 100px;
+            font-size: 0.6rem; font-weight: 600; text-transform: uppercase; margin: 0.3rem 0;
+        }
+        .grid-card-platform.ig { background: var(--instagram-bg); color: var(--instagram); }
+        .grid-card-platform.li { background: var(--linkedin-bg); color: var(--linkedin); }
+        .grid-card-format {
+            font-size: 0.65rem; color: var(--copper); font-weight: 600; margin-bottom: 0.3rem;
+        }
+        .grid-card-subject {
+            font-size: 0.68rem; color: #555; line-height: 1.35; flex: 1;
+        }
+        .grid-card-time {
+            font-size: 0.6rem; color: var(--muted); margin-top: auto; padding-top: 0.3rem;
+        }
+        .grid-card-pillar {
+            position: absolute; top: 0; right: 0; width: 6px; height: 100%;
+            border-radius: 0 10px 10px 0;
+        }
+
+        /* =======================================
+           OPTION B — Timeline vertical
+           ======================================= */
+        .timeline { position: relative; padding-left: 2.5rem; }
+        .timeline::before {
+            content: ''; position: absolute; left: 10px; top: 0; bottom: 0;
+            width: 2px; background: linear-gradient(to bottom, var(--copper), var(--copper-light));
+        }
+        .timeline-week-title {
+            font-family: 'Space Grotesk'; font-size: 1.1rem; font-weight: 700;
+            color: var(--dark); margin: 1.5rem 0 0.75rem; position: relative;
+        }
+        .timeline-week-title:first-child { margin-top: 0; }
+        .timeline-week-title::before {
+            content: ''; position: absolute; left: -2.5rem; top: 50%; transform: translateY(-50%);
+            width: 22px; height: 22px; background: var(--copper); border-radius: 50%;
+        }
+
+        .tl-item { position: relative; margin-bottom: 0.75rem; }
+        .tl-item::before {
+            content: ''; position: absolute; left: -2.15rem; top: 12px;
+            width: 10px; height: 10px; background: var(--copper-bg); border: 2px solid var(--copper);
+            border-radius: 50%;
+        }
+        .tl-item.rest::before { background: #ddd; border-color: #ccc; }
+
+        .tl-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 0.75rem 1rem; display: flex; align-items: flex-start; gap: 1rem;
+        }
+        .tl-card.rest { background: var(--rest-bg); border-style: dashed; opacity: 0.6; }
+
+        .tl-date { min-width: 55px; text-align: center; }
+        .tl-date-day { font-weight: 700; font-size: 1.1rem; color: var(--dark); }
+        .tl-date-weekday { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+
+        .tl-body { flex: 1; }
+        .tl-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap; }
+        .tl-platform { font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 100px; text-transform: uppercase; }
+        .tl-platform.ig { background: var(--instagram-bg); color: var(--instagram); }
+        .tl-platform.li { background: var(--linkedin-bg); color: var(--linkedin); }
+        .tl-format { font-size: 0.7rem; color: var(--copper); font-weight: 600; }
+        .tl-pillar-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .tl-subject { font-size: 0.8rem; color: #444; line-height: 1.4; }
+        .tl-time { font-size: 0.65rem; color: var(--muted); margin-top: 0.25rem; }
+
+        /* =======================================
+           OPTION C — Kanban / Swim lanes par plateforme
+           ======================================= */
+        .kanban { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .kanban-lane {
+            background: #fafafa; border-radius: 10px; padding: 0.75rem;
+            border: 1px solid var(--border);
+        }
+        .kanban-lane-title {
+            font-family: 'Space Grotesk'; font-size: 0.85rem; font-weight: 700;
+            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem; border-bottom: 2px solid var(--border);
+        }
+        .kanban-lane-title .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .kanban-lane-title .dot.ig { background: var(--instagram); }
+        .kanban-lane-title .dot.li { background: var(--linkedin); }
+
+        .kanban-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+            padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; font-size: 0.75rem;
+            border-left: 3px solid transparent; transition: transform 0.15s;
+        }
+        .kanban-card:hover { transform: translateX(3px); }
+        .kanban-card-date { font-weight: 700; color: var(--muted); font-size: 0.65rem; }
+        .kanban-card-format { color: var(--copper); font-weight: 600; font-size: 0.7rem; margin: 0.15rem 0; }
+        .kanban-card-subject { color: #555; line-height: 1.35; }
+        .kanban-card-time { color: var(--muted); font-size: 0.6rem; margin-top: 0.2rem; }
+
+        /* pillar colors on left border */
+        .pillar-property { border-left-color: var(--pillar-property) !important; }
+        .pillar-market { border-left-color: var(--pillar-market) !important; }
+        .pillar-behind { border-left-color: var(--pillar-behind) !important; }
+        .pillar-lifestyle { border-left-color: var(--pillar-lifestyle) !important; }
+        .pillar-success { border-left-color: var(--pillar-success) !important; }
+
+        /* =======================================
+           OPTION D — Compact agenda (like Google Calendar weekly)
+           ======================================= */
+        .agenda { width: 100%; border-collapse: collapse; }
+        .agenda th {
+            font-family: 'Space Grotesk'; font-size: 0.7rem; font-weight: 600;
+            color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+            padding: 0.5rem; text-align: center; border-bottom: 2px solid var(--copper);
+            background: var(--copper-bg);
+        }
+        .agenda td {
+            padding: 0.4rem; vertical-align: top; border: 1px solid #eee;
+            font-size: 0.7rem; min-height: 100px; width: 14.28%;
+        }
+        .agenda-cell {
+            background: var(--card-bg); border-radius: 6px; padding: 0.4rem;
+            min-height: 90px; position: relative;
+        }
+        .agenda-cell.rest { background: var(--rest-bg); }
+        .agenda-date { font-weight: 700; font-size: 0.75rem; color: var(--dark); }
+        .agenda-platform-badge {
+            display: inline-block; font-size: 0.55rem; font-weight: 700;
+            padding: 1px 5px; border-radius: 4px; margin-top: 0.2rem;
+        }
+        .agenda-platform-badge.ig { background: var(--instagram-bg); color: var(--instagram); }
+        .agenda-platform-badge.li { background: var(--linkedin-bg); color: var(--linkedin); }
+        .agenda-format { font-size: 0.6rem; color: var(--copper); font-weight: 600; margin-top: 0.2rem; }
+        .agenda-subject { font-size: 0.62rem; color: #555; line-height: 1.3; margin-top: 0.15rem; }
+        .agenda-pillar-bar {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 3px; border-radius: 0 0 6px 6px;
+        }
+
+        /* =======================================
+           OPTION E — Modern cards with big day numbers
+           ======================================= */
+        .modern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+
+        .modern-card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--border); transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .modern-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .modern-card.rest { opacity: 0.5; }
+
+        .modern-card-top {
+            padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem;
+        }
+        .modern-card-number {
+            font-family: 'Space Grotesk'; font-size: 1.8rem; font-weight: 700;
+            color: var(--copper); line-height: 1; min-width: 40px;
+        }
+        .modern-card-meta { flex: 1; }
+        .modern-card-weekday { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+        .modern-card-platform-wrap { display: flex; gap: 0.3rem; margin-top: 0.15rem; }
+
+        .modern-card-body {
+            padding: 0 1rem 0.75rem; border-top: 1px solid #f0f0f0;
+        }
+        .modern-card-format {
+            font-size: 0.7rem; color: var(--copper); font-weight: 600; margin: 0.5rem 0 0.2rem;
+        }
+        .modern-card-subject { font-size: 0.78rem; color: #444; line-height: 1.4; }
+        .modern-card-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.4rem 1rem; background: #fafafa; font-size: 0.6rem; color: var(--muted);
+        }
+        .modern-pillar-tag {
+            display: inline-block; padding: 1px 8px; border-radius: 4px;
+            font-size: 0.6rem; font-weight: 600; color: #fff;
+        }
+
+        /* --- Stories section shared --- */
+        .stories-section {
+            background: var(--copper-bg); border-radius: 8px; padding: 0.75rem 1rem;
+            margin-top: 1rem; font-size: 0.75rem; border-left: 3px solid var(--copper);
+        }
+        .stories-section strong { color: var(--copper); font-size: 0.75rem; }
+        .stories-section ul { margin: 0.3rem 0 0 1rem; color: #555; }
+        .stories-section li { margin-bottom: 0.15rem; font-size: 0.72rem; }
+
+        /* --- Pillar legend --- */
+        .legend { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.7rem; }
+        .legend-item { display: flex; align-items: center; gap: 4px; color: var(--muted); }
+        .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+        /* --- Separator between options --- */
+        .separator { height: 1px; background: #333; margin: 4rem 0; max-width: 900px; margin-left: auto; margin-right: auto; }
+    </style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<div class="page-header">
+    <div class="badge">AgentIA Design Review</div>
+    <h1>Calendrier Editorial — Options visuelles</h1>
+    <p>5 propositions pour presenter les resultats du Module 3 dans Streamlit</p>
+</div>
+
+<!-- ===================== LEGEND (shared) ===================== -->
+<div class="option-section">
+    <div class="legend" style="background: #222; padding: 1rem; border-radius: 8px;">
+        <span style="color:#999; font-weight:600; margin-right:0.5rem;">Piliers :</span>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-property)"></div><span style="color:#ccc">Property Stories</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-market)"></div><span style="color:#ccc">Market Insights</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-behind)"></div><span style="color:#ccc">Behind The Scenes</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-lifestyle)"></div><span style="color:#ccc">Lifestyle</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-success)"></div><span style="color:#ccc">Success Stories</span></div>
+    </div>
+</div>
+
+<!-- ===================== OPTION A — Grid Cards ===================== -->
+<div class="option-section">
+    <div class="option-label">Option A — Grille semaine (7 colonnes)</div>
+    <div class="option-desc">Vue compacte inspiree d'un calendrier classique. Chaque jour = une carte. Barre coloree a droite = pilier de contenu.</div>
+
+    <div class="frame"><div class="frame-inner">
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-property)"></div>Property Stories</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-market)"></div>Market Insights</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-behind)"></div>Behind The Scenes</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-lifestyle)"></div>Lifestyle</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-success)"></div>Success Stories</div>
+        </div>
+
+        <div class="grid-week-title">Semaine 1 — Lancement des nouvelles proprietes Marisol</div>
+        <div class="grid-cards">
+            <div class="grid-card">
+                <div class="grid-card-pillar" style="background:var(--pillar-property)"></div>
+                <div class="grid-card-date"><span class="grid-card-day">Mer</span> 12/02</div>
+                <span class="grid-card-platform ig">Instagram</span>
+                <div class="grid-card-format">Video tour</div>
+                <div class="grid-card-subject">Decouvrez les 3 nouvelles proprietes de luxe a Marisol</div>
+                <div class="grid-card-time">18h-20h</div>
+            </div>
+            <div class="grid-card">
+                <div class="grid-card-pillar" style="background:var(--pillar-market)"></div>
+                <div class="grid-card-date"><span class="grid-card-day">Jeu</span> 13/02</div>
+                <span class="grid-card-platform li">LinkedIn</span>
+                <div class="grid-card-format">Article insights</div>
+                <div class="grid-card-subject">Marisol, la nouvelle frontiere de l'investissement lisboete</div>
+                <div class="grid-card-time">8h-10h</div>
+            </div>
+            <div class="grid-card">
+                <div class="grid-card-pillar" style="background:var(--pillar-property)"></div>
+                <div class="grid-card-date"><span class="grid-card-day">Ven</span> 14/02</div>
+                <span class="grid-card-platform ig">Instagram</span>
+                <div class="grid-card-format">Carrousel</div>
+                <div class="grid-card-subject">Avant/Apres : La transformation architecturale d'une propriete</div>
+                <div class="grid-card-time">18h-20h</div>
+            </div>
+            <div class="grid-card">
+                <div class="grid-card-pillar" style="background:var(--pillar-behind)"></div>
+                <div class="grid-card-date"><span class="grid-card-day">Sam</span> 15/02</div>
+                <span class="grid-card-platform ig">Instagram</span>
+                <div class="grid-card-format">Reel</div>
+                <div class="grid-card-subject">Coulisses : Tournage video des proprietes Marisol</div>
+                <div class="grid-card-time">11h-13h</div>
+            </div>
+            <div class="grid-card rest">
+                <div class="grid-card-date"><span class="grid-card-day">Dim</span> 16/02</div>
+                <div class="grid-card-subject" style="margin-top:1rem; text-align:center; color:#aaa;">Repos</div>
+            </div>
+            <div class="grid-card">
+                <div class="grid-card-pillar" style="background:var(--pillar-market)"></div>
+                <div class="grid-card-date"><span class="grid-card-day">Lun</span> 17/02</div>
+                <span class="grid-card-platform li">LinkedIn</span>
+                <div class="grid-card-format">Post data</div>
+                <div class="grid-card-subject">Infographie : Prix/m2 comparatif Marisol vs Chiado</div>
+                <div class="grid-card-time">8h-10h</div>
+            </div>
+            <div class="grid-card">
+                <div class="grid-card-pillar" style="background:var(--pillar-lifestyle)"></div>
+                <div class="grid-card-date"><span class="grid-card-day">Mar</span> 18/02</div>
+                <span class="grid-card-platform ig">Instagram</span>
+                <div class="grid-card-format">Carrousel</div>
+                <div class="grid-card-subject">Vivre a Marisol en 2026 — Guide complet du quartier</div>
+                <div class="grid-card-time">18h-20h</div>
+            </div>
+        </div>
+
+        <div class="stories-section">
+            <strong>Stories de la semaine :</strong>
+            <ul>
+                <li><b>Mer :</b> Premier jour de tournage a Marisol !</li>
+                <li><b>Jeu :</b> Sondage : Marisol ou Chiado ? Ou investiriez-vous ?</li>
+                <li><b>Ven :</b> Les finitions sont exceptionnelles... swipe pour voir</li>
+                <li><b>Sam :</b> FAQ : Comment fonctionne le financement ?</li>
+            </ul>
+        </div>
+    </div></div>
+</div>
+
+<div class="separator"></div>
+
+<!-- ===================== OPTION B — Timeline ===================== -->
+<div class="option-section">
+    <div class="option-label">Option B — Timeline verticale</div>
+    <div class="option-desc">Deroulement chronologique, facile a lire. Chaque jour = une ligne avec les infos cles. Ideal pour mobile.</div>
+
+    <div class="frame"><div class="frame-inner">
+        <div class="timeline">
+            <div class="timeline-week-title">Semaine 1 — Lancement Marisol</div>
+
+            <div class="tl-item">
+                <div class="tl-card">
+                    <div class="tl-date">
+                        <div class="tl-date-day">12</div>
+                        <div class="tl-date-weekday">Mer</div>
+                    </div>
+                    <div class="tl-body">
+                        <div class="tl-top">
+                            <span class="tl-platform ig">Instagram</span>
+                            <span class="tl-format">Video tour</span>
+                            <span class="tl-pillar-dot" style="background:var(--pillar-property)" title="Property Stories"></span>
+                        </div>
+                        <div class="tl-subject">Decouvrez les 3 nouvelles proprietes de luxe a Marisol — Tour immersif 360</div>
+                        <div class="tl-time">18h-20h · Fixes + Rotation A</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-card">
+                    <div class="tl-date">
+                        <div class="tl-date-day">13</div>
+                        <div class="tl-date-weekday">Jeu</div>
+                    </div>
+                    <div class="tl-body">
+                        <div class="tl-top">
+                            <span class="tl-platform li">LinkedIn</span>
+                            <span class="tl-format">Article insights</span>
+                            <span class="tl-pillar-dot" style="background:var(--pillar-market)" title="Market Insights"></span>
+                        </div>
+                        <div class="tl-subject">Marisol, la nouvelle frontiere de l'investissement lisboete — Analyse detaillee</div>
+                        <div class="tl-time">8h-10h · LinkedIn specifiques</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-card">
+                    <div class="tl-date">
+                        <div class="tl-date-day">14</div>
+                        <div class="tl-date-weekday">Ven</div>
+                    </div>
+                    <div class="tl-body">
+                        <div class="tl-top">
+                            <span class="tl-platform ig">Instagram</span>
+                            <span class="tl-format">Carrousel</span>
+                            <span class="tl-pillar-dot" style="background:var(--pillar-property)" title="Property Stories"></span>
+                        </div>
+                        <div class="tl-subject">Avant/Apres : La transformation architecturale d'une propriete Marisol (5 slides)</div>
+                        <div class="tl-time">18h-20h · Fixes + Rotation B</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-card">
+                    <div class="tl-date">
+                        <div class="tl-date-day">15</div>
+                        <div class="tl-date-weekday">Sam</div>
+                    </div>
+                    <div class="tl-body">
+                        <div class="tl-top">
+                            <span class="tl-platform ig">Instagram</span>
+                            <span class="tl-format">Reel</span>
+                            <span class="tl-pillar-dot" style="background:var(--pillar-behind)" title="Behind The Scenes"></span>
+                        </div>
+                        <div class="tl-subject">Coulisses : Tournage video des proprietes Marisol avec mon equipe</div>
+                        <div class="tl-time">11h-13h · Fixes + Rotation A</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tl-item rest">
+                <div class="tl-card rest">
+                    <div class="tl-date">
+                        <div class="tl-date-day">16</div>
+                        <div class="tl-date-weekday">Dim</div>
+                    </div>
+                    <div class="tl-body">
+                        <div class="tl-subject" style="color:#aaa; padding-top:0.3rem;">Repos — Stories uniquement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-card">
+                    <div class="tl-date">
+                        <div class="tl-date-day">17</div>
+                        <div class="tl-date-weekday">Lun</div>
+                    </div>
+                    <div class="tl-body">
+                        <div class="tl-top">
+                            <span class="tl-platform li">LinkedIn</span>
+                            <span class="tl-format">Post data</span>
+                            <span class="tl-pillar-dot" style="background:var(--pillar-market)" title="Market Insights"></span>
+                        </div>
+                        <div class="tl-subject">Infographie : Prix/m2 comparatif Marisol vs Chiado vs Principe Real</div>
+                        <div class="tl-time">8h-10h · LinkedIn specifiques</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-card">
+                    <div class="tl-date">
+                        <div class="tl-date-day">18</div>
+                        <div class="tl-date-weekday">Mar</div>
+                    </div>
+                    <div class="tl-body">
+                        <div class="tl-top">
+                            <span class="tl-platform ig">Instagram</span>
+                            <span class="tl-format">Carrousel</span>
+                            <span class="tl-pillar-dot" style="background:var(--pillar-lifestyle)" title="Lifestyle"></span>
+                        </div>
+                        <div class="tl-subject">Vivre a Marisol en 2026 — Guide complet du quartier pour investisseurs</div>
+                        <div class="tl-time">18h-20h · Fixes + Rotation B</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stories-section">
+            <strong>Stories de la semaine :</strong>
+            <ul>
+                <li><b>Mer :</b> Premier jour de tournage a Marisol !</li>
+                <li><b>Jeu :</b> Sondage : Marisol ou Chiado ?</li>
+                <li><b>Ven :</b> Les finitions sont exceptionnelles...</li>
+                <li><b>Sam :</b> FAQ : Comment fonctionne le financement ?</li>
+                <li><b>Dim :</b> Les investisseurs internationaux adorent Marisol</li>
+                <li><b>Lun :</b> Visite virtuelle 3D disponible (lien en bio)</li>
+                <li><b>Mar :</b> Livraison prevue mi-mars</li>
+            </ul>
+        </div>
+    </div></div>
+</div>
+
+<div class="separator"></div>
+
+<!-- ===================== OPTION C — Kanban par plateforme ===================== -->
+<div class="option-section">
+    <div class="option-label">Option C — Kanban par plateforme</div>
+    <div class="option-desc">Vue par colonnes-plateforme. Pratique pour voir d'un coup ce qui va sur Instagram vs LinkedIn. Barre gauche = pilier.</div>
+
+    <div class="frame"><div class="frame-inner">
+        <div class="kanban">
+            <div class="kanban-lane">
+                <div class="kanban-lane-title"><div class="dot ig"></div> Instagram (5 posts)</div>
+
+                <div class="kanban-card pillar-property">
+                    <div class="kanban-card-date">Mer 12/02</div>
+                    <div class="kanban-card-format">Video tour</div>
+                    <div class="kanban-card-subject">Decouvrez les 3 nouvelles proprietes de luxe a Marisol</div>
+                    <div class="kanban-card-time">18h-20h</div>
+                </div>
+
+                <div class="kanban-card pillar-property">
+                    <div class="kanban-card-date">Ven 14/02</div>
+                    <div class="kanban-card-format">Carrousel (5 slides)</div>
+                    <div class="kanban-card-subject">Avant/Apres : Transformation architecturale d'une propriete Marisol</div>
+                    <div class="kanban-card-time">18h-20h</div>
+                </div>
+
+                <div class="kanban-card pillar-behind">
+                    <div class="kanban-card-date">Sam 15/02</div>
+                    <div class="kanban-card-format">Reel</div>
+                    <div class="kanban-card-subject">Coulisses : Tournage video des proprietes Marisol</div>
+                    <div class="kanban-card-time">11h-13h</div>
+                </div>
+
+                <div class="kanban-card pillar-lifestyle">
+                    <div class="kanban-card-date">Mar 18/02</div>
+                    <div class="kanban-card-format">Carrousel</div>
+                    <div class="kanban-card-subject">Vivre a Marisol en 2026 — Guide quartier</div>
+                    <div class="kanban-card-time">18h-20h</div>
+                </div>
+
+                <div class="kanban-card pillar-success">
+                    <div class="kanban-card-date">Mer 19/02</div>
+                    <div class="kanban-card-format">Video temoignage</div>
+                    <div class="kanban-card-subject">Client international revele son investissement a Marisol</div>
+                    <div class="kanban-card-time">18h-20h</div>
+                </div>
+            </div>
+
+            <div class="kanban-lane">
+                <div class="kanban-lane-title"><div class="dot li"></div> LinkedIn (3 posts)</div>
+
+                <div class="kanban-card pillar-market">
+                    <div class="kanban-card-date">Jeu 13/02</div>
+                    <div class="kanban-card-format">Article insights</div>
+                    <div class="kanban-card-subject">Marisol, la nouvelle frontiere de l'investissement lisboete</div>
+                    <div class="kanban-card-time">8h-10h</div>
+                </div>
+
+                <div class="kanban-card pillar-market">
+                    <div class="kanban-card-date">Lun 17/02</div>
+                    <div class="kanban-card-format">Post data / Infographie</div>
+                    <div class="kanban-card-subject">Prix/m2 comparatif Marisol vs Chiado vs Principe Real</div>
+                    <div class="kanban-card-time">8h-10h</div>
+                </div>
+
+                <div class="kanban-card pillar-market">
+                    <div class="kanban-card-date">Jeu 20/02</div>
+                    <div class="kanban-card-format">Article expertise</div>
+                    <div class="kanban-card-subject">15 ans d'expertise : Comment j'identifie les proprietes a fort potentiel</div>
+                    <div class="kanban-card-time">8h-10h</div>
+                </div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div class="separator"></div>
+
+<!-- ===================== OPTION D — Agenda semaine (Google Calendar style) ===================== -->
+<div class="option-section">
+    <div class="option-label">Option D — Agenda semaine (style Google Calendar)</div>
+    <div class="option-desc">Vue la plus compacte. Grille fixe 7 jours avec barre coloree en bas pour le pilier. Ideal pour un overview rapide.</div>
+
+    <div class="frame"><div class="frame-inner" style="overflow-x: auto;">
+        <table class="agenda">
+            <thead>
+                <tr>
+                    <th>Mer 12</th><th>Jeu 13</th><th>Ven 14</th><th>Sam 15</th><th>Dim 16</th><th>Lun 17</th><th>Mar 18</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="agenda-cell">
+                            <div class="agenda-date">12</div>
+                            <span class="agenda-platform-badge ig">IG</span>
+                            <div class="agenda-format">Video tour</div>
+                            <div class="agenda-subject">3 proprietes luxe Marisol — Tour 360</div>
+                            <div class="agenda-pillar-bar" style="background:var(--pillar-property)"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="agenda-cell">
+                            <div class="agenda-date">13</div>
+                            <span class="agenda-platform-badge li">LI</span>
+                            <div class="agenda-format">Article</div>
+                            <div class="agenda-subject">Marisol, nouvelle frontiere investissement</div>
+                            <div class="agenda-pillar-bar" style="background:var(--pillar-market)"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="agenda-cell">
+                            <div class="agenda-date">14</div>
+                            <span class="agenda-platform-badge ig">IG</span>
+                            <div class="agenda-format">Carrousel</div>
+                            <div class="agenda-subject">Avant/Apres transformation propriete</div>
+                            <div class="agenda-pillar-bar" style="background:var(--pillar-property)"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="agenda-cell">
+                            <div class="agenda-date">15</div>
+                            <span class="agenda-platform-badge ig">IG</span>
+                            <div class="agenda-format">Reel</div>
+                            <div class="agenda-subject">Coulisses tournage Marisol</div>
+                            <div class="agenda-pillar-bar" style="background:var(--pillar-behind)"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="agenda-cell rest">
+                            <div class="agenda-date">16</div>
+                            <div class="agenda-subject" style="color:#aaa; text-align:center; padding-top:1rem;">Repos</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="agenda-cell">
+                            <div class="agenda-date">17</div>
+                            <span class="agenda-platform-badge li">LI</span>
+                            <div class="agenda-format">Post data</div>
+                            <div class="agenda-subject">Prix/m2 Marisol vs Chiado</div>
+                            <div class="agenda-pillar-bar" style="background:var(--pillar-market)"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="agenda-cell">
+                            <div class="agenda-date">18</div>
+                            <span class="agenda-platform-badge ig">IG</span>
+                            <div class="agenda-format">Carrousel</div>
+                            <div class="agenda-subject">Guide quartier Marisol 2026</div>
+                            <div class="agenda-pillar-bar" style="background:var(--pillar-lifestyle)"></div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="legend" style="margin-top:0.75rem;">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-property)"></div>Property</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-market)"></div>Market</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-behind)"></div>Coulisses</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-lifestyle)"></div>Lifestyle</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pillar-success)"></div>Success</div>
+        </div>
+    </div></div>
+</div>
+
+<div class="separator"></div>
+
+<!-- ===================== OPTION E — Modern Cards ===================== -->
+<div class="option-section">
+    <div class="option-label">Option E — Cartes modernes (gros numeros)</div>
+    <div class="option-desc">Design magazine. Gros numero du jour, badge pilier colore, footer avec horaire. Le plus visuel et premium.</div>
+
+    <div class="frame"><div class="frame-inner">
+        <div class="modern-grid">
+            <div class="modern-card">
+                <div class="modern-card-top">
+                    <div class="modern-card-number">12</div>
+                    <div class="modern-card-meta">
+                        <div class="modern-card-weekday">Mercredi</div>
+                        <span class="grid-card-platform ig" style="font-size:0.6rem">Instagram</span>
+                    </div>
+                </div>
+                <div class="modern-card-body">
+                    <div class="modern-card-format">Video tour</div>
+                    <div class="modern-card-subject">Decouvrez les 3 nouvelles proprietes de luxe a Marisol — Tour immersif 360</div>
+                </div>
+                <div class="modern-card-footer">
+                    <span>18h-20h</span>
+                    <span class="modern-pillar-tag" style="background:var(--pillar-property)">Property Stories</span>
+                </div>
+            </div>
+
+            <div class="modern-card">
+                <div class="modern-card-top">
+                    <div class="modern-card-number">13</div>
+                    <div class="modern-card-meta">
+                        <div class="modern-card-weekday">Jeudi</div>
+                        <span class="grid-card-platform li" style="font-size:0.6rem">LinkedIn</span>
+                    </div>
+                </div>
+                <div class="modern-card-body">
+                    <div class="modern-card-format">Article insights</div>
+                    <div class="modern-card-subject">Marisol, la nouvelle frontiere de l'investissement lisboete — Analyse detaillee du potentiel</div>
+                </div>
+                <div class="modern-card-footer">
+                    <span>8h-10h</span>
+                    <span class="modern-pillar-tag" style="background:var(--pillar-market)">Market Insights</span>
+                </div>
+            </div>
+
+            <div class="modern-card">
+                <div class="modern-card-top">
+                    <div class="modern-card-number">14</div>
+                    <div class="modern-card-meta">
+                        <div class="modern-card-weekday">Vendredi</div>
+                        <span class="grid-card-platform ig" style="font-size:0.6rem">Instagram</span>
+                    </div>
+                </div>
+                <div class="modern-card-body">
+                    <div class="modern-card-format">Carrousel (5 slides)</div>
+                    <div class="modern-card-subject">Avant/Apres : La transformation architecturale d'une propriete Marisol</div>
+                </div>
+                <div class="modern-card-footer">
+                    <span>18h-20h</span>
+                    <span class="modern-pillar-tag" style="background:var(--pillar-property)">Property Stories</span>
+                </div>
+            </div>
+
+            <div class="modern-card">
+                <div class="modern-card-top">
+                    <div class="modern-card-number">15</div>
+                    <div class="modern-card-meta">
+                        <div class="modern-card-weekday">Samedi</div>
+                        <span class="grid-card-platform ig" style="font-size:0.6rem">Instagram</span>
+                    </div>
+                </div>
+                <div class="modern-card-body">
+                    <div class="modern-card-format">Reel</div>
+                    <div class="modern-card-subject">Coulisses : Tournage video des proprietes Marisol avec mon equipe</div>
+                </div>
+                <div class="modern-card-footer">
+                    <span>11h-13h</span>
+                    <span class="modern-pillar-tag" style="background:var(--pillar-behind)">Behind The Scenes</span>
+                </div>
+            </div>
+
+            <div class="modern-card rest">
+                <div class="modern-card-top">
+                    <div class="modern-card-number" style="color:#ccc">16</div>
+                    <div class="modern-card-meta">
+                        <div class="modern-card-weekday">Dimanche</div>
+                    </div>
+                </div>
+                <div class="modern-card-body">
+                    <div class="modern-card-subject" style="color:#aaa; text-align:center; padding: 0.5rem 0;">Repos — Stories uniquement</div>
+                </div>
+                <div class="modern-card-footer"><span></span><span></span></div>
+            </div>
+
+            <div class="modern-card">
+                <div class="modern-card-top">
+                    <div class="modern-card-number">17</div>
+                    <div class="modern-card-meta">
+                        <div class="modern-card-weekday">Lundi</div>
+                        <span class="grid-card-platform li" style="font-size:0.6rem">LinkedIn</span>
+                    </div>
+                </div>
+                <div class="modern-card-body">
+                    <div class="modern-card-format">Post data / Infographie</div>
+                    <div class="modern-card-subject">Prix/m2 comparatif Marisol vs Chiado vs Principe Real</div>
+                </div>
+                <div class="modern-card-footer">
+                    <span>8h-10h</span>
+                    <span class="modern-pillar-tag" style="background:var(--pillar-market)">Market Insights</span>
+                </div>
+            </div>
+
+            <div class="modern-card">
+                <div class="modern-card-top">
+                    <div class="modern-card-number">18</div>
+                    <div class="modern-card-meta">
+                        <div class="modern-card-weekday">Mardi</div>
+                        <span class="grid-card-platform ig" style="font-size:0.6rem">Instagram</span>
+                    </div>
+                </div>
+                <div class="modern-card-body">
+                    <div class="modern-card-format">Carrousel</div>
+                    <div class="modern-card-subject">Vivre a Marisol en 2026 — Guide complet du quartier pour investisseurs</div>
+                </div>
+                <div class="modern-card-footer">
+                    <span>18h-20h</span>
+                    <span class="modern-pillar-tag" style="background:var(--pillar-lifestyle)">Lisboa Lifestyle</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stories-section">
+            <strong>Stories de la semaine :</strong>
+            <ul>
+                <li><b>Mer :</b> Premier jour de tournage a Marisol !</li>
+                <li><b>Jeu :</b> Sondage interactif — Marisol ou Chiado ?</li>
+                <li><b>Ven :</b> Les finitions sont exceptionnelles... swipe pour voir</li>
+                <li><b>Sam :</b> FAQ : Comment fonctionne le financement ?</li>
+                <li><b>Dim :</b> Les investisseurs internationaux adorent Marisol</li>
+                <li><b>Lun :</b> Visite virtuelle 3D disponible (lien en bio)</li>
+                <li><b>Mar :</b> Livraison prevue mi-mars — Qui sera mon prochain client ?</li>
+            </ul>
+        </div>
+    </div></div>
+</div>
+
+<div class="separator"></div>
+
+<!-- ===================== RECAP ===================== -->
+<div class="option-section" style="padding-bottom: 4rem;">
+    <div class="option-label">Recapitulatif</div>
+    <div style="background: #222; border-radius: 12px; padding: 1.5rem; margin-top: 1rem;">
+        <table style="width:100%; border-collapse:collapse; font-size: 0.85rem; color: #ccc;">
+            <thead>
+                <tr style="border-bottom: 2px solid #444;">
+                    <th style="text-align:left; padding: 0.5rem; color: var(--copper);">Option</th>
+                    <th style="text-align:left; padding: 0.5rem; color: var(--copper);">Style</th>
+                    <th style="text-align:left; padding: 0.5rem; color: var(--copper);">Forces</th>
+                    <th style="text-align:left; padding: 0.5rem; color: var(--copper);">Limites</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #333;">
+                    <td style="padding: 0.5rem; font-weight: 600; color: #fff;">A — Grille</td>
+                    <td style="padding: 0.5rem;">Calendrier classique</td>
+                    <td style="padding: 0.5rem;">Vue d'ensemble semaine, familier</td>
+                    <td style="padding: 0.5rem;">Texte petit sur mobile, dense</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #333;">
+                    <td style="padding: 0.5rem; font-weight: 600; color: #fff;">B — Timeline</td>
+                    <td style="padding: 0.5rem;">Fil chronologique</td>
+                    <td style="padding: 0.5rem;">Tres lisible, mobile-friendly, narratif</td>
+                    <td style="padding: 0.5rem;">Plus long a scroller</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #333;">
+                    <td style="padding: 0.5rem; font-weight: 600; color: #fff;">C — Kanban</td>
+                    <td style="padding: 0.5rem;">Colonnes plateforme</td>
+                    <td style="padding: 0.5rem;">Vue par canal, actionnable</td>
+                    <td style="padding: 0.5rem;">Perd la chronologie, 2 colonnes max</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #333;">
+                    <td style="padding: 0.5rem; font-weight: 600; color: #fff;">D — Agenda</td>
+                    <td style="padding: 0.5rem;">Google Calendar</td>
+                    <td style="padding: 0.5rem;">Ultra compact, overview rapide</td>
+                    <td style="padding: 0.5rem;">Trop petit pour details, pas mobile</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.5rem; font-weight: 600; color: #fff;">E — Cartes</td>
+                    <td style="padding: 0.5rem;">Magazine / premium</td>
+                    <td style="padding: 0.5rem;">Le plus visuel, premium, lisible</td>
+                    <td style="padding: 0.5rem;">Prend plus de place verticalement</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
