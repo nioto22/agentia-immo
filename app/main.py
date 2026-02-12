@@ -252,10 +252,8 @@ with st.sidebar:
 
     st.markdown("""
     <div class="sidebar-info">
-        <h4>Langues supportees</h4>
-        <p>🇵🇹 Portugues</p>
-        <p>🇫🇷 Francais</p>
-        <p>🇬🇧 English</p>
+        <h4>Langue</h4>
+        <p>\U0001f1eb\U0001f1f7 Francais</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -332,9 +330,9 @@ if not st.session_state.interview_started and not st.session_state.persona_gener
     DEMO_DIR = DATA_DIR / "demo"
     DEMO_PROFILES = {
         "— Choisir un profil demo —": None,
-        "Sofia Mendes — Luxe, Chiado/Principe Real": "demo-sofia-mendes-persona.md",
-        "Marco Santos — Residentiel, Lisboa": "demo-marco-santos-persona.md",
-        "Ana & Pedro Costa — Equipe, Multi-segment": "demo-ana-pedro-costa-persona.md",
+        "Sophie Martin — Luxe, Paris 6e/7e/16e": "demo-sophie-martin-persona.md",
+        "Marc Dupont — Residentiel, Ile-de-France": "demo-marc-dupont-persona.md",
+        "Claire & Thomas Moreau — Investissement, Lyon": "demo-claire-thomas-moreau-persona.md",
     }
 
     st.markdown("##### Charger un profil demo")
@@ -372,7 +370,7 @@ if not st.session_state.interview_started:
         "Collez ici votre bio LinkedIn, description Facebook, ou texte de presentation",
         value=st.session_state.social_profile,
         height=100,
-        placeholder="Ex: Agent immobilier specialise dans le luxe a Lisbonne depuis 8 ans. Passione par l'architecture et le design...",
+        placeholder="Ex: Agent immobilier specialise dans le luxe a Paris depuis 8 ans. Passionne par l'architecture haussmannienne et le design...",
         help="Si fourni, l'IA adaptera ses questions et l'interview sera plus courte (~6-8 questions au lieu de 10-12).",
     )
     st.session_state.social_profile = social_profile

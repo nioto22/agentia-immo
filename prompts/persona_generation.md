@@ -11,8 +11,8 @@ Remplis CHAQUE champ avec des recommandations **personnalisees**. Aucun champ ge
 - Regle 70/30 : 70% contenu valeur, 30% promotionnel
 - Constance > volume : 3 posts/semaine reguliers > 10 puis silence
 - Proprietes avec video = 403% plus de demandes
-- Hashtags PT performants : #imobiliario #realestate #portugal #lisboa
-- Meilleurs agents Lisbonne : 1K-17K followers — marche non sature
+- Hashtags FR performants : #immobilier #immo #immobilierfrance #agentimmobilier
+- Meilleurs agents immobiliers francais : 5K-100K followers — marche en forte croissance
 
 ## FORMAT DE SORTIE
 

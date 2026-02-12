@@ -102,7 +102,7 @@ with col1:
 with col2:
     location = st.text_input(
         "Localisation",
-        placeholder="Ex: Lisbonne, Chiado, Porto...",
+        placeholder="Ex: Paris, Lyon, Bordeaux...",
         help="Votre zone geographique principale",
     )
 

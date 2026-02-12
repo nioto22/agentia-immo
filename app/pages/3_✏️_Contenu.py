@@ -163,7 +163,7 @@ def classify_pillar(pillar_text):
         return "market"
     if any(w in p for w in ["behind", "couliss", "bastidor", "scenes", "personal", "marque"]):
         return "behind"
-    if any(w in p for w in ["lifestyle", "life", "commun", "local", "lisboa", "quartier"]):
+    if any(w in p for w in ["lifestyle", "life", "commun", "local", "ville", "quartier"]):
         return "lifestyle"
     if any(w in p for w in ["success", "succes", "client", "temoign", "testemunho", "stories"]):
         return "success"
@@ -449,7 +449,7 @@ with col2:
 topic = st.text_area(
     "Sujet / Theme du contenu",
     value=prefill_topic,
-    placeholder="Ex: 5 erreurs a eviter lors d'un achat immobilier a Lisbonne\nOu: Presentation d'une nouvelle villa avec vue mer a Cascais\nOu: Coulisses d'une journee de visites avec mes clients",
+    placeholder="Ex: 5 erreurs a eviter lors d'un achat immobilier a Paris\nOu: Presentation d'un appartement haussmannien dans le 7eme\nOu: Coulisses d'une journee de visites avec mes clients",
     height=100,
     help="Decrivez le sujet. Plus vous etes precis, meilleur sera le resultat.",
 )
@@ -477,7 +477,7 @@ with st.expander("Options avancees", expanded=False):
         )
     specific_instructions = st.text_input(
         "Instructions specifiques (optionnel)",
-        placeholder="Ex: Mentionner le quartier Chiado, inclure un prix, parler d'une promo...",
+        placeholder="Ex: Mentionner le quartier du Marais, inclure un prix, parler d'une promo...",
     )
 
 st.markdown("---")

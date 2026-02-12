@@ -169,7 +169,7 @@ def classify_pillar(pillar_text):
         return "market"
     if any(w in p for w in ["behind", "couliss", "bastidor", "scenes", "personal", "marque"]):
         return "behind"
-    if any(w in p for w in ["lifestyle", "life", "commun", "local", "lisboa", "quartier"]):
+    if any(w in p for w in ["lifestyle", "life", "commun", "local", "ville", "quartier"]):
         return "lifestyle"
     if any(w in p for w in ["success", "succes", "client", "temoign", "testemunho", "stories"]):
         return "success"
