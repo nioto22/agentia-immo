@@ -171,14 +171,37 @@ def classify_pillar(pillar_text):
 
 
 def parse_calendar_json(content):
-    """Extract and parse JSON data from calendar content."""
-    match = re.search(r'<!--CALENDAR_JSON\s*(.*?)\s*CALENDAR_JSON-->', content, re.DOTALL)
-    if not match:
-        return None
-    try:
-        return json.loads(match.group(1))
-    except (json.JSONDecodeError, ValueError):
-        return None
+    """Extract and parse JSON data from calendar content (robust)."""
+    # Strategy 1: exact HTML comment markers
+    match = re.search(r'<!--\s*CALENDAR_JSON\s*(.*?)\s*CALENDAR_JSON\s*-->', content, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # Strategy 2: markers without proper HTML comment syntax
+    match = re.search(r'CALENDAR_JSON\s*(\{.*?\})\s*CALENDAR_JSON', content, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # Strategy 3: find any JSON block containing "weeks" key (code fence or raw)
+    for pattern in [
+        r'```json\s*(\{.*?"weeks".*?\})\s*```',
+        r'```\s*(\{.*?"weeks".*?\})\s*```',
+        r'(\{[^{}]*"weeks"\s*:\s*\[.*\]\s*\})',
+    ]:
+        match = re.search(pattern, content, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(1))
+            except (json.JSONDecodeError, ValueError):
+                continue
+
+    return None
 
 
 def get_markdown_content(content):

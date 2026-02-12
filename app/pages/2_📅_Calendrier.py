@@ -18,6 +18,7 @@ from utils import (
     APP_TITLE,
     APP_ICON,
     MODEL_CONVERSATION,
+    MODEL_PERSONA,
     inject_css,
     load_prompt,
     chat_with_claude,
@@ -176,14 +177,37 @@ def classify_pillar(pillar_text):
 
 
 def parse_calendar_json(content):
-    """Extract and parse JSON data from calendar content."""
-    match = re.search(r'<!--CALENDAR_JSON\s*(.*?)\s*CALENDAR_JSON-->', content, re.DOTALL)
-    if not match:
-        return None
-    try:
-        return json.loads(match.group(1))
-    except (json.JSONDecodeError, ValueError):
-        return None
+    """Extract and parse JSON data from calendar content (robust)."""
+    # Strategy 1: exact HTML comment markers
+    match = re.search(r'<!--\s*CALENDAR_JSON\s*(.*?)\s*CALENDAR_JSON\s*-->', content, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # Strategy 2: markers without proper HTML comment syntax
+    match = re.search(r'CALENDAR_JSON\s*(\{.*?\})\s*CALENDAR_JSON', content, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # Strategy 3: find any JSON block containing "weeks" key (code fence or raw)
+    for pattern in [
+        r'```json\s*(\{.*?"weeks".*?\})\s*```',
+        r'```\s*(\{.*?"weeks".*?\})\s*```',
+        r'(\{[^{}]*"weeks"\s*:\s*\[.*\]\s*\})',
+    ]:
+        match = re.search(pattern, content, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(1))
+            except (json.JSONDecodeError, ValueError):
+                continue
+
+    return None
 
 
 def get_markdown_content(content):
@@ -434,12 +458,12 @@ if st.button(
 
     messages = [{"role": "user", "content": user_message}]
 
-    with st.spinner("AgentIA planifie votre calendrier editorial... (15-30 secondes)"):
+    with st.spinner("AgentIA planifie votre calendrier editorial... (30-60 secondes)"):
         response, error = chat_with_claude(
             messages,
             calendar_prompt,
-            model=MODEL_CONVERSATION,
-            max_tokens=6144,
+            model=MODEL_PERSONA,
+            max_tokens=8192,
         )
 
     st.session_state.calendar_generating = False
@@ -463,7 +487,7 @@ if st.session_state.calendar_content:
     cal_data = parse_calendar_json(st.session_state.calendar_content)
 
     if cal_data:
-        # Visual display (Option D grid + Option E popover)
+        # Visual display (Option E modern cards)
         render_visual_calendar(cal_data)
 
         # Expandable full markdown version
@@ -472,6 +496,7 @@ if st.session_state.calendar_content:
             st.markdown(md_content)
     else:
         # Fallback: render raw markdown (old calendars without JSON)
+        st.warning("Affichage visuel indisponible (donnees structurees non trouvees). Regenerez le calendrier pour obtenir la vue en cartes.")
         st.markdown(
             f'<div class="persona-output">\n\n{st.session_state.calendar_content}\n\n</div>',
             unsafe_allow_html=True,
