@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentIA — Presentation Demo | iRL-tech x EPINEXUS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --copper: #B87333;
+            --copper-light: #D4956A;
+            --copper-dark: #9A5F2A;
+            --bg: #FAFAF8;
+            --bg-warm: #F5F0E6;
+            --text: #171412;
+            --text-muted: #827568;
+            --text-light: #a09589;
+            --border: #e8e0d6;
+            --white: #FFFFFF;
+            --success: #2e7d32;
+            --success-bg: #e8f5e9;
+            --blue: #1565c0;
+            --blue-bg: #e3f2fd;
+            --purple: #6a1b9a;
+            --purple-bg: #f3e5f5;
+            --orange-bg: #fff3e0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* --- NAV --- */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(250, 250, 248, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.6rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700; font-size: 1.1rem; color: var(--copper);
+        }
+        .nav-links { display: flex; gap: 0.25rem; }
+        .nav-links a {
+            text-decoration: none; color: var(--text-muted);
+            font-size: 0.75rem; font-weight: 500; padding: 0.35rem 0.75rem;
+            border-radius: 100px; transition: all 0.2s;
+        }
+        .nav-links a:hover { background: var(--bg-warm); color: var(--copper-dark); }
+
+        /* --- HERO --- */
+        .hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg) 100%);
+            border-bottom: 3px solid var(--copper);
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(184,115,51,0.12); color: var(--copper-dark);
+            padding: 6px 16px; border-radius: 100px;
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.1em; margin-bottom: 1.5rem;
+        }
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3rem; font-weight: 700; color: var(--text);
+            letter-spacing: -0.03em; margin-bottom: 0.75rem;
+        }
+        .hero h1 span { color: var(--copper); }
+        .hero p {
+            font-size: 1.15rem; color: var(--text-muted);
+            max-width: 600px; margin: 0 auto 2rem;
+        }
+        .hero-meta {
+            display: flex; justify-content: center; gap: 2rem;
+            font-size: 0.8rem; color: var(--text-light);
+        }
+        .hero-meta strong { color: var(--text-muted); }
+
+        /* --- SECTIONS --- */
+        .section {
+            max-width: 900px; margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        .section-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.7rem; font-weight: 700; color: var(--copper);
+            text-transform: uppercase; letter-spacing: 0.15em;
+            margin-bottom: 0.5rem;
+        }
+        .section h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem; font-weight: 700; color: var(--text);
+            letter-spacing: -0.02em; margin-bottom: 0.5rem;
+        }
+        .section-sub {
+            font-size: 1rem; color: var(--text-muted);
+            margin-bottom: 2.5rem;
+        }
+
+        .divider {
+            max-width: 900px; margin: 0 auto;
+            border: none; border-top: 1px solid var(--border);
+        }
+
+        /* --- PROBLEM CARDS --- */
+        .problems {
+            display: grid; grid-template-columns: 1fr; gap: 1rem;
+        }
+        .problem-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem;
+            display: flex; gap: 1.25rem; align-items: flex-start;
+            transition: box-shadow 0.2s;
+        }
+        .problem-card:hover { box-shadow: 0 4px 16px rgba(184,115,51,0.08); }
+        .problem-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; flex-shrink: 0;
+        }
+        .problem-icon.red { background: #fce4ec; }
+        .problem-icon.orange { background: var(--orange-bg); }
+        .problem-icon.gray { background: #f5f5f5; }
+        .problem-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;
+        }
+        .problem-card p { font-size: 0.85rem; color: var(--text-muted); }
+        .stat-highlight {
+            display: inline-block; background: rgba(184,115,51,0.08);
+            color: var(--copper-dark); font-weight: 600;
+            padding: 1px 6px; border-radius: 4px; font-size: 0.85rem;
+        }
+
+        /* --- SOLUTION FLOW --- */
+        .solution-flow {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+        }
+        .sol-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem; position: relative;
+            overflow: hidden;
+        }
+        .sol-card::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 4px; height: 100%; background: var(--copper);
+        }
+        .sol-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem; font-weight: 700; color: rgba(184,115,51,0.15);
+            position: absolute; top: 0.5rem; right: 1rem; line-height: 1;
+        }
+        .sol-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem;
+            color: var(--copper-dark);
+        }
+        .sol-card p { font-size: 0.82rem; color: var(--text-muted); }
+        .sol-card ul {
+            list-style: none; padding: 0; margin-top: 0.5rem;
+        }
+        .sol-card ul li {
+            font-size: 0.82rem; color: var(--text-muted);
+            padding: 0.15rem 0; padding-left: 1rem;
+            position: relative;
+        }
+        .sol-card ul li::before {
+            content: ''; position: absolute; left: 0; top: 0.55rem;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--copper-light);
+        }
+        .sol-arrow {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: var(--copper-light);
+            grid-column: 1 / -1; padding: 0.25rem 0;
+        }
+        .sol-result {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--bg-warm), rgba(184,115,51,0.08));
+            border: 2px solid var(--copper);
+            border-radius: 12px; padding: 1.5rem;
+            text-align: center;
+        }
+        .sol-result h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem; font-weight: 700; color: var(--copper-dark);
+            margin-bottom: 0.5rem;
+        }
+        .sol-result p { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* --- DELIVERABLES --- */
+        .deliverables {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+        }
+        .deliv-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem;
+        }
+        .deliv-card.highlight {
+            border: 2px solid var(--copper);
+            background: linear-gradient(180deg, var(--white) 0%, rgba(184,115,51,0.03) 100%);
+        }
+        .deliv-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+        .deliv-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem;
+        }
+        .deliv-card p { font-size: 0.82rem; color: var(--text-muted); }
+        .deliv-list { list-style: none; padding: 0; margin-top: 0.5rem; }
+        .deliv-list li {
+            font-size: 0.8rem; color: var(--text-muted);
+            padding: 0.2rem 0; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .check { color: var(--success); font-weight: 600; }
+        .pending { color: var(--text-light); }
+
+        /* --- DEMO SECTION --- */
+        .demo-timeline {
+            position: relative; padding-left: 2rem;
+        }
+        .demo-timeline::before {
+            content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px;
+            width: 2px; background: var(--border);
+        }
+        .demo-step {
+            position: relative; margin-bottom: 1.75rem;
+        }
+        .demo-step::before {
+            content: ''; position: absolute; left: -2rem; top: 6px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--copper); border: 3px solid var(--bg);
+        }
+        .demo-step-time {
+            font-size: 0.7rem; font-weight: 600; color: var(--copper);
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-bottom: 0.15rem;
+        }
+        .demo-step h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;
+        }
+        .demo-step p { font-size: 0.85rem; color: var(--text-muted); }
+        .demo-step .demo-detail {
+            background: var(--bg-warm); border-radius: 8px;
+            padding: 0.75rem 1rem; margin-top: 0.5rem;
+            font-size: 0.8rem; color: var(--text-muted);
+        }
+
+        /* --- DISCUSSION --- */
+        .discussion-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+        }
+        .disc-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem;
+        }
+        .disc-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .disc-card ul {
+            list-style: none; padding: 0;
+        }
+        .disc-card ul li {
+            font-size: 0.82rem; color: var(--text-muted);
+            padding: 0.25rem 0; padding-left: 1rem; position: relative;
+        }
+        .disc-card ul li::before {
+            content: '?'; position: absolute; left: 0; top: 0.25rem;
+            font-weight: 700; color: var(--copper); font-size: 0.75rem;
+        }
+
+        /* --- STATS ROW --- */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-box {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem; text-align: center;
+        }
+        .stat-box .stat-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem; font-weight: 700; color: var(--copper);
+            line-height: 1;
+        }
+        .stat-box .stat-label {
+            font-size: 0.72rem; color: var(--text-muted);
+            margin-top: 0.35rem; line-height: 1.3;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            text-align: center; padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-light); font-size: 0.75rem;
+        }
+        .footer strong { color: var(--copper); }
+
+        /* --- POINT DEMO --- */
+        .demo-point {
+            background: var(--white); border: 2px solid var(--copper);
+            border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem;
+        }
+        .demo-point h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem; font-weight: 700; color: var(--copper-dark);
+            margin-bottom: 1rem;
+        }
+        .demo-checklist {
+            list-style: none; padding: 0;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+        }
+        .demo-checklist li {
+            font-size: 0.85rem; color: var(--text);
+            padding: 0.4rem 0.75rem;
+            background: var(--success-bg); border-radius: 6px;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .demo-checklist li.todo {
+            background: #fff8e1; color: #f57f17;
+        }
+
+        /* --- NEXT STEPS TABLE --- */
+        .next-table {
+            width: 100%; border-collapse: collapse; margin-top: 1rem;
+        }
+        .next-table th {
+            text-align: left; font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--text-light);
+            padding: 0.5rem 0.75rem; border-bottom: 2px solid var(--border);
+        }
+        .next-table td {
+            font-size: 0.82rem; color: var(--text-muted);
+            padding: 0.6rem 0.75rem; border-bottom: 1px solid #f0ece6;
+        }
+        .next-table td:first-child { font-weight: 500; color: var(--text); }
+        .badge-done {
+            display: inline-block; background: var(--success-bg); color: var(--success);
+            font-size: 0.65rem; font-weight: 600; padding: 2px 8px;
+            border-radius: 100px; text-transform: uppercase;
+        }
+        .badge-progress {
+            display: inline-block; background: var(--blue-bg); color: var(--blue);
+            font-size: 0.65rem; font-weight: 600; padding: 2px 8px;
+            border-radius: 100px; text-transform: uppercase;
+        }
+        .badge-todo {
+            display: inline-block; background: #fff8e1; color: #f57f17;
+            font-size: 0.65rem; font-weight: 600; padding: 2px 8px;
+            border-radius: 100px; text-transform: uppercase;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .solution-flow, .deliverables, .discussion-grid, .stats-row {
+                grid-template-columns: 1fr;
+            }
+            .demo-checklist { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <div class="nav-brand">AgentIA</div>
+    <div class="nav-links">
+        <a href="#problematiques">Problematiques</a>
+        <a href="#solutions">Solutions</a>
+        <a href="#livrables">Livrables</a>
+        <a href="#point-demo">Point Demo</a>
+        <a href="#demo">Demo</a>
+        <a href="#discussion">Discussion</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-badge">iRL-tech x EPINEXUS</div>
+    <h1>Agent<span>IA</span></h1>
+    <p>Suite IA de communication pour agents immobiliers.<br>De zero a 2 semaines de contenu publiable en 30 minutes.</p>
+    <div class="hero-meta">
+        <span><strong>Demo</strong> Fevrier 2026</span>
+        <span><strong>Version</strong> 0.2</span>
+        <span><strong>Marche</strong> Portugal / Europe</span>
+    </div>
+</section>
+
+<!-- 1 — PROBLEMATIQUES -->
+<section class="section" id="problematiques">
+    <div class="section-num">01</div>
+    <h2>Problematiques</h2>
+    <p class="section-sub">Les agents immobiliers font face a 3 obstacles majeurs dans leur communication digitale.</p>
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-val">72%</div>
+            <div class="stat-label">des agents independants n'utilisent pas l'IA pour leurs reseaux sociaux</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">+403%</div>
+            <div class="stat-label">de demandes en plus pour les biens presentes en video</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">4.1%</div>
+            <div class="stat-label">taux d'engagement moyen des carrousels Instagram</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">0</div>
+            <div class="stat-label">outil IA abordable specialise marche immobilier portugais</div>
+        </div>
+    </div>
+
+    <div class="problems">
+        <div class="problem-card">
+            <div class="problem-icon red">&#x1f635;</div>
+            <div>
+                <h3>Les agents ne savent pas se vendre</h3>
+                <p>Ils sont impressionnes par l'IA mais ne savent pas comment l'utiliser pour construire leur marque personnelle. Pas de strategie de positionnement, pas de ton de voix defini, pas de coherence dans leur communication.</p>
+            </div>
+        </div>
+        <div class="problem-card">
+            <div class="problem-icon orange">&#x23f3;</div>
+            <div>
+                <h3>Manque de temps et de courage pour communiquer</h3>
+                <p>Publier regulierement sur les reseaux sociaux demande du temps et de l'organisation. La plupart des agents commencent puis abandonnent. La constance est le facteur numero 1 de reussite — et c'est la que tout s'effondre.</p>
+            </div>
+        </div>
+        <div class="problem-card">
+            <div class="problem-icon gray">&#x1f4b8;</div>
+            <div>
+                <h3>Outils existants inadaptes ou trop chers</h3>
+                <p>Les concurrents (RealEstateContent.ai a <span class="stat-highlight">$99/mois</span>, Lofty a <span class="stat-highlight">$449+</span>, Luxury Presence a <span class="stat-highlight">$500+</span>) sont centres sur le marche US, en anglais uniquement, et sans personnalisation du profil agent. Aucun outil ne couvre le marche portugais/europeen.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- 2 — SOLUTIONS -->
+<section class="section" id="solutions">
+    <div class="section-num">02</div>
+    <h2>Solutions</h2>
+    <p class="section-sub">Un pipeline IA complet en 4 modules, du diagnostic a la publication.</p>
+
+    <div class="solution-flow">
+        <div class="sol-card">
+            <div class="sol-num">1</div>
+            <h3>Veille & Benchmark</h3>
+            <p>Intelligence de marche et analyse concurrentielle personnalisee.</p>
+            <ul>
+                <li>Metriques cles du marche immobilier digital</li>
+                <li>Choix des formats et piliers de contenu preferes</li>
+                <li>Rapport de veille personnalise genere par IA</li>
+            </ul>
+        </div>
+        <div class="sol-card">
+            <div class="sol-num">2</div>
+            <h3>Profil & Persona</h3>
+            <p>Interview IA guidee pour creer un profil de communication unique.</p>
+            <ul>
+                <li>10-12 questions conversationnelles</li>
+                <li>Extraction automatique du positionnement, ton, valeurs</li>
+                <li>Profil complet : bios, hashtags, frequences, piliers</li>
+            </ul>
+        </div>
+        <div class="sol-card">
+            <div class="sol-num">3</div>
+            <h3>Calendrier Editorial</h3>
+            <p>Planification strategique de 14 jours de contenu.</p>
+            <ul>
+                <li>Repartition plateforme, format, pilier par jour</li>
+                <li>Horaires optimaux et hashtags recommandes</li>
+                <li>Affichage visuel en cartes interactives</li>
+            </ul>
+        </div>
+        <div class="sol-card">
+            <div class="sol-num">4</div>
+            <h3>Creation de Contenu</h3>
+            <p>Generation de posts prets a publier, alignes avec le profil.</p>
+            <ul>
+                <li>Selection directe depuis le calendrier</li>
+                <li>Adapte a chaque plateforme (Instagram, LinkedIn, Facebook)</li>
+                <li>Texte, hashtags, CTA, suggestions visuelles</li>
+            </ul>
+        </div>
+
+        <div class="sol-result">
+            <h3>Resultat : de zero a 2 semaines de contenu en ~30 minutes</h3>
+            <p>Cout API estime : <strong>~0.20-0.50 EUR</strong> par session complete (interview + calendrier + 5 posts)</p>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- 3 — LIVRABLES -->
+<section class="section" id="livrables">
+    <div class="section-num">03</div>
+    <h2>Ce que vous avez a la fin de cette demo</h2>
+    <p class="section-sub">Tout ce qui est deja produit et pret a utiliser.</p>
+
+    <div class="deliverables">
+        <div class="deliv-card highlight">
+            <div class="deliv-icon">&#x1f4ca;</div>
+            <h3>Etude de marche complete</h3>
+            <p>717 lignes de research & discovery couvrant :</p>
+            <ul class="deliv-list">
+                <li><span class="check">&#x2713;</span> Analyse concurrentielle (7 outils, prix, positionnement)</li>
+                <li><span class="check">&#x2713;</span> Best practices par plateforme (Instagram, LinkedIn, Facebook)</li>
+                <li><span class="check">&#x2713;</span> Strategie hashtags et frequences optimales</li>
+                <li><span class="check">&#x2713;</span> Top agents Lisbonne (benchmarks reels)</li>
+                <li><span class="check">&#x2713;</span> Statistiques marche et opportunites</li>
+                <li><span class="check">&#x2713;</span> 6 differenciateurs AgentIA identifies</li>
+            </ul>
+        </div>
+
+        <div class="deliv-card highlight">
+            <div class="deliv-icon">&#x1f3af;</div>
+            <h3>Business model & scope</h3>
+            <p>Documents prets pour avancer :</p>
+            <ul class="deliv-list">
+                <li><span class="check">&#x2713;</span> Scope document (PDF)</li>
+                <li><span class="check">&#x2713;</span> Email recap structure</li>
+                <li><span class="check">&#x2713;</span> Pricing agents : 49-399 EUR/mois</li>
+                <li><span class="check">&#x2713;</span> Modele revenus iRL-tech (dev + maintenance + SaaS)</li>
+                <li><span class="check">&#x2713;</span> Projections revenus 2026 (jusqu'a 6 000 EUR/mois)</li>
+                <li><span class="check">&#x2713;</span> Matrice concurrentielle detaillee</li>
+            </ul>
+        </div>
+
+        <div class="deliv-card highlight">
+            <div class="deliv-icon">&#x1f680;</div>
+            <h3>Application fonctionnelle V0.2</h3>
+            <p>4 modules operationnels :</p>
+            <ul class="deliv-list">
+                <li><span class="check">&#x2713;</span> Module 1 : Veille & Benchmark</li>
+                <li><span class="check">&#x2713;</span> Module 2 : Interview IA + Persona</li>
+                <li><span class="check">&#x2713;</span> Module 3 : Calendrier editorial visuel</li>
+                <li><span class="check">&#x2713;</span> Module 4 : Creation contenu + picker calendrier</li>
+                <li><span class="check">&#x2713;</span> 3 profils demo pre-charges</li>
+                <li><span class="check">&#x2713;</span> Repo GitHub prive deploye</li>
+            </ul>
+        </div>
+
+        <div class="deliv-card">
+            <div class="deliv-icon">&#x1f4dd;</div>
+            <h3>Ce qui reste a faire</h3>
+            <p>Prochaines etapes apres validation :</p>
+            <ul class="deliv-list">
+                <li><span class="pending">&#x25cb;</span> Test avec 2-3 agents pilotes reels</li>
+                <li><span class="pending">&#x25cb;</span> Deploiement Streamlit Cloud (hebergement)</li>
+                <li><span class="pending">&#x25cb;</span> Integration N8N pour workflows automatises</li>
+                <li><span class="pending">&#x25cb;</span> Systeme d'authentification / multi-utilisateurs</li>
+                <li><span class="pending">&#x25cb;</span> Publication automatique vers reseaux sociaux</li>
+                <li><span class="pending">&#x25cb;</span> Dashboard analytics et suivi performance</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- 4 — POINT DEMO -->
+<section class="section" id="point-demo">
+    <div class="section-num">04</div>
+    <h2>Point sur la demo</h2>
+    <p class="section-sub">Etat d'avancement et preparation.</p>
+
+    <div class="demo-point">
+        <h3>Checklist technique</h3>
+        <ul class="demo-checklist">
+            <li><span class="check">&#x2713;</span> Module 1 — Veille & Benchmark</li>
+            <li><span class="check">&#x2713;</span> Module 2 — Interview IA + Persona</li>
+            <li><span class="check">&#x2713;</span> Module 3 — Calendrier editorial</li>
+            <li><span class="check">&#x2713;</span> Module 4 — Creation de contenu</li>
+            <li><span class="check">&#x2713;</span> Profils demo charges (Sofia, Marco, Ana &amp; Pedro)</li>
+            <li><span class="check">&#x2713;</span> Connexion preferences Module 1 → Modules 3-4</li>
+            <li><span class="check">&#x2713;</span> Calendrier visuel (cartes modernes Option E)</li>
+            <li><span class="check">&#x2713;</span> Pre-remplissage contenu depuis calendrier</li>
+        </ul>
+    </div>
+
+    <table class="next-table">
+        <thead>
+            <tr>
+                <th>Livrable</th>
+                <th>Statut</th>
+                <th>Remarques</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Research & Discovery (717 lignes)</td>
+                <td><span class="badge-done">Fait</span></td>
+                <td>Concurrence, stats, best practices, hashtags</td>
+            </tr>
+            <tr>
+                <td>Scope Document (PDF)</td>
+                <td><span class="badge-done">Fait</span></td>
+                <td>Pret a envoyer a Juan</td>
+            </tr>
+            <tr>
+                <td>Application V0.2 (4 modules)</td>
+                <td><span class="badge-done">Fait</span></td>
+                <td>Fonctionnelle, testee avec profils demo</td>
+            </tr>
+            <tr>
+                <td>Email recap Juan</td>
+                <td><span class="badge-done">Fait</span></td>
+                <td>Template DIS-02 prepare</td>
+            </tr>
+            <tr>
+                <td>Validation scope avec Juan</td>
+                <td><span class="badge-progress">En cours</span></td>
+                <td>Prevu cette semaine</td>
+            </tr>
+            <tr>
+                <td>Tests complets + polish</td>
+                <td><span class="badge-progress">En cours</span></td>
+                <td>Avant la demo</td>
+            </tr>
+            <tr>
+                <td>Deploiement Streamlit Cloud</td>
+                <td><span class="badge-todo">A faire</span></td>
+                <td>Apres validation</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<hr class="divider">
+
+<!-- 5 — DEMO -->
+<section class="section" id="demo">
+    <div class="section-num">05</div>
+    <h2>Demo</h2>
+    <p class="section-sub">Scenario live : "Rencontrez Sofia, agent immobilier a Lisbonne"</p>
+
+    <div class="demo-timeline">
+        <div class="demo-step">
+            <div class="demo-step-time">Etape 1 — 2 min</div>
+            <h3>Veille & Benchmark</h3>
+            <p>Montrer les chiffres cles du marche. Selectionner le segment Luxe, Lisbonne, les formats et piliers preferes. Generer un rapport de veille personnalise.</p>
+            <div class="demo-detail">
+                Objectif : montrer que l'outil connait le marche avant meme de commencer.
+            </div>
+        </div>
+
+        <div class="demo-step">
+            <div class="demo-step-time">Etape 2 — 5 min</div>
+            <h3>Interview IA & Persona</h3>
+            <p>Charger le profil demo Sofia Mendes (luxe, Chiado/Principe Real). Montrer le profil de communication genere : positionnement, ton, valeurs, hashtags, frequences.</p>
+            <div class="demo-detail">
+                Alternative rapide : charger le profil demo directement au lieu de refaire l'interview complete.
+            </div>
+        </div>
+
+        <div class="demo-step">
+            <div class="demo-step-time">Etape 3 — 3 min</div>
+            <h3>Calendrier Editorial</h3>
+            <p>Generer un calendrier de 14 jours depuis le profil Sofia. Montrer l'affichage visuel en cartes : jours, plateformes, formats, piliers avec codes couleur.</p>
+            <div class="demo-detail">
+                Highlight : les cartes interactives avec detail au clic (popover).
+            </div>
+        </div>
+
+        <div class="demo-step">
+            <div class="demo-step-time">Etape 4 — 3 min</div>
+            <h3>Creation de Contenu</h3>
+            <p>Cliquer sur une carte du calendrier pour pre-remplir les parametres. Generer un post Instagram (carrousel ou reel). Montrer le contenu pret a publier avec hashtags et CTA.</p>
+            <div class="demo-detail">
+                Highlight : du calendrier au post en 2 clics. Copier-coller et publier.
+            </div>
+        </div>
+
+        <div class="demo-step">
+            <div class="demo-step-time">Etape 5 — 2 min</div>
+            <h3>Cout & Accessibilite</h3>
+            <p>Montrer le cout API reel de la session (~0.20-0.50 EUR). Souligner l'accessibilite par rapport aux concurrents ($99-500+/mois) et le potentiel de marge.</p>
+            <div class="demo-detail">
+                Message cle : "Tout ca pour moins de 50 centimes. Les agents paient 49-199 EUR/mois."
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- 6 — DISCUSSION -->
+<section class="section" id="discussion">
+    <div class="section-num">06</div>
+    <h2>Discussion</h2>
+    <p class="section-sub">Points ouverts et questions pour avancer ensemble.</p>
+
+    <div class="discussion-grid">
+        <div class="disc-card">
+            <h3>&#x1f4b0; Modele commercial</h3>
+            <ul>
+                <li>Grille tarifaire agents : 49 / 99 / 199 / 399 EUR ?</li>
+                <li>Modele de revenus iRL-tech : forfait dev + maintenance + revenue share ?</li>
+                <li>Qui est le client final : EPINEXUS revend, ou iRL-tech directement ?</li>
+                <li>Volume cible : combien d'agents en phase pilote ?</li>
+            </ul>
+        </div>
+        <div class="disc-card">
+            <h3>&#x1f465; Agents pilotes</h3>
+            <ul>
+                <li>Qui sont les 2-3 premiers agents pour tester ?</li>
+                <li>Quel segment privilegier en premier (luxe, residentiel, investissement) ?</li>
+                <li>Feedback attendu : quels criteres de succes ?</li>
+                <li>Timeline : quand commencer les tests pilotes ?</li>
+            </ul>
+        </div>
+        <div class="disc-card">
+            <h3>&#x1f527; Fonctionnalites V1</h3>
+            <ul>
+                <li>Publication automatique vers reseaux sociaux — prioritaire ?</li>
+                <li>Multi-langues (portugais, anglais, francais) — quelles langues en V1 ?</li>
+                <li>White-label pour EPINEXUS — necessaire en V1 ?</li>
+                <li>Analytics / suivi performance — souhaite ?</li>
+            </ul>
+        </div>
+        <div class="disc-card">
+            <h3>&#x1f4c5; Prochaines etapes</h3>
+            <ul>
+                <li>Validation du scope : cette semaine ?</li>
+                <li>Budget developpement Phase 1 : 1 500-2 500 EUR ?</li>
+                <li>Deadline souhaitee pour V1 deployee ?</li>
+                <li>Rythme de collaboration : hebdomadaire, bi-hebdomadaire ?</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <p><strong>AgentIA</strong> — iRL-tech x EPINEXUS | Fevrier 2026</p>
+    <p style="margin-top:0.25rem;">Planifiez, publiez, performez.</p>
+</footer>
+
+</body>
+</html>
