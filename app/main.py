@@ -26,7 +26,7 @@ st.set_page_config(
     page_title=f"{APP_TITLE} - Communication Immobiliere IA",
     page_icon=APP_ICON,
     layout="centered",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # --- CUSTOM CSS ---
