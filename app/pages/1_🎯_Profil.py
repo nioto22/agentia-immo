@@ -19,6 +19,7 @@ from utils import (
     inject_css,
     load_prompt,
     chat_with_claude,
+    chat_with_claude_stream,
     estimate_cost,
     render_sidebar,
     check_api_key,
@@ -103,8 +104,8 @@ def save_persona(messages, agent_name="agent"):
     return filepath
 
 
-def generate_persona(messages):
-    """Generate the final persona using Sonnet with the full template prompt."""
+def generate_persona_stream(messages):
+    """Generate the final persona using Sonnet 4.5 with streaming."""
     persona_prompt = load_prompt("persona_generation.md")
     interview_summary = build_interview_summary(messages)
 
@@ -112,7 +113,7 @@ def generate_persona(messages):
         {"role": "user", "content": f"Voici l'interview complete. Genere le profil de communication.\n\n---\n\n{interview_summary}"},
     ]
 
-    return chat_with_claude(
+    return chat_with_claude_stream(
         generation_messages,
         persona_prompt,
         model=MODEL_PERSONA,
@@ -306,22 +307,28 @@ if not st.session_state.persona_generated:
 
         # Check if interview is done and persona generation should start
         if GENERATION_TRIGGER in response:
-            with st.spinner("Generation du profil complet avec Sonnet..."):
-                persona_response, error = generate_persona(st.session_state.messages)
-                if error:
-                    st.error(f"\u26a0\ufe0f Erreur generation profil : {error}")
-                    st.stop()
-                st.session_state.messages.append({"role": "assistant", "content": persona_response})
-                st.session_state.persona_generated = True
-                st.session_state.persona_content = persona_response
-                # Save to DB
-                agent_name = extract_agent_name(persona_response)
-                save_profile(
-                    agent_name,
-                    persona_response,
-                    social_profile=st.session_state.get("social_profile", ""),
-                    interview_messages=st.session_state.messages,
-                )
+            st.info("Generation du profil complet avec Sonnet 4.5...")
+            persona_placeholder = st.empty()
+            persona_chunks = []
+            for chunk in generate_persona_stream(st.session_state.messages):
+                persona_chunks.append(chunk)
+                persona_placeholder.markdown("".join(persona_chunks))
+
+            persona_response = "".join(persona_chunks)
+            if persona_response.startswith("[ERREUR]"):
+                st.error(f"\u26a0\ufe0f {persona_response}")
+                st.stop()
+            st.session_state.messages.append({"role": "assistant", "content": persona_response})
+            st.session_state.persona_generated = True
+            st.session_state.persona_content = persona_response
+            # Save to DB
+            agent_name = extract_agent_name(persona_response)
+            save_profile(
+                agent_name,
+                persona_response,
+                social_profile=st.session_state.get("social_profile", ""),
+                interview_messages=st.session_state.messages,
+            )
             st.rerun()
 
 

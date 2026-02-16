@@ -6,8 +6,6 @@ iRL-tech x EPINEXUS - Feb 2026
 """
 
 import streamlit as st
-import json
-import re
 from datetime import datetime, timedelta
 import sys
 from pathlib import Path
@@ -18,10 +16,10 @@ from utils import (
     APP_TITLE,
     APP_ICON,
     MODEL_CONVERSATION,
-    MODEL_PERSONA,
     inject_css,
+    inject_calendar_css,
     load_prompt,
-    chat_with_claude,
+    chat_with_claude_stream,
     estimate_cost,
     render_sidebar,
     check_api_key,
@@ -29,7 +27,15 @@ from utils import (
     load_benchmark_from_session,
     extract_agent_name,
     save_to_data,
+    classify_pillar,
+    parse_calendar_json,
+    get_markdown_content,
+    PILLAR_COLORS,
+    PILLAR_LABELS,
 )
+from db import init_db, save_calendar, get_latest_calendar, get_active_profile
+
+init_db()
 
 # --- PAGE CONFIG ---
 st.set_page_config(
@@ -39,187 +45,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# --- INJECT CSS + CALENDAR CSS ---
+# --- INJECT CSS ---
 inject_css()
+inject_calendar_css()
 
-CALENDAR_CSS = """
-<style>
-    /* --- Modern card (Option E) --- */
-    .mc {
-        background: #FFFFFF; border-radius: 12px; overflow: hidden;
-        border: 1px solid #e8e0d6; margin-bottom: 0.25rem;
-    }
-    .mc-rest {
-        background: #FFFFFF; border-radius: 12px; overflow: hidden;
-        border: 1px dashed #ddd; margin-bottom: 0.25rem; opacity: 0.5;
-    }
-
-    /* Top row: big number + weekday + platform */
-    .mc-top {
-        padding: 0.65rem 0.85rem 0.4rem; display: flex; align-items: center; gap: 0.65rem;
-    }
-    .mc-num {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2rem; font-weight: 700; color: #B87333; line-height: 1; min-width: 36px;
-    }
-    .mc-num-rest { color: #ccc; }
-    .mc-weekday {
-        font-size: 0.7rem; color: #827568; text-transform: uppercase;
-        font-weight: 600; letter-spacing: 0.05em;
-    }
-    .mc-badges { display: flex; gap: 0.35rem; flex-wrap: wrap; align-items: center; }
-
-    /* Platform badge */
-    .mc-plat {
-        display: inline-block; padding: 2px 8px; border-radius: 100px;
-        font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-    .mc-plat-instagram { background: #fce4ec; color: #c2185b; }
-    .mc-plat-linkedin { background: #e3f2fd; color: #1565c0; }
-    .mc-plat-facebook { background: #e8eaf6; color: #283593; }
-
-    /* Format badge */
-    .mc-fmt {
-        display: inline-block; padding: 2px 8px; border-radius: 100px;
-        font-size: 0.65rem; font-weight: 600; background: #F5F0E6; color: #9A5F2A;
-    }
-
-    /* Body: short description */
-    .mc-body {
-        padding: 0 0.85rem 0.5rem; font-size: 0.78rem; color: #444; line-height: 1.4;
-        border-top: 1px solid #f0ece6;
-    }
-
-    /* Footer: time + pillar */
-    .mc-foot {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 0.35rem 0.85rem; background: #fafaf8; font-size: 0.65rem; color: #827568;
-    }
-    .mc-pillar {
-        display: inline-block; padding: 2px 8px; border-radius: 4px;
-        font-size: 0.6rem; font-weight: 600; color: #fff;
-    }
-
-    /* Popover detail card */
-    .pop-num {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2.5rem; font-weight: 700; color: #B87333; line-height: 1;
-    }
-    .pop-pillar {
-        display: inline-block; padding: 3px 12px; border-radius: 6px;
-        font-size: 0.75rem; font-weight: 600; color: #fff;
-    }
-
-    /* Stories section */
-    .stories-box {
-        background: #F5F0E6; border-radius: 8px; padding: 0.75rem 1rem;
-        margin-top: 0.75rem; border-left: 3px solid #B87333;
-        font-size: 0.78rem; color: #524b46;
-    }
-
-    /* Legend */
-    .legend-row {
-        display: flex; gap: 0.75rem; flex-wrap: wrap;
-        font-size: 0.7rem; color: #827568; margin-bottom: 0.75rem;
-    }
-    .legend-item { display: flex; align-items: center; gap: 4px; }
-    .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
-
-    /* Week title */
-    .week-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.05rem; font-weight: 700; color: #171412;
-        padding-bottom: 0.4rem; border-bottom: 2px solid #B87333;
-        margin: 1.5rem 0 0.75rem;
-    }
-    .week-title:first-child { margin-top: 0; }
-</style>
-"""
-st.markdown(CALENDAR_CSS, unsafe_allow_html=True)
-
-
-# --- PILLAR COLORS ---
-PILLAR_COLORS = {
-    "property": "#E65100",
-    "market": "#1565C0",
-    "behind": "#6A1B9A",
-    "lifestyle": "#2E7D32",
-    "success": "#F9A825",
-    "default": "#827568",
-}
-
-PILLAR_LABELS = {
-    "property": "Biens & Proprietes",
-    "market": "Expertise Marche",
-    "behind": "Coulisses",
-    "lifestyle": "Lifestyle",
-    "success": "Succes Clients",
-}
-
-
-def classify_pillar(pillar_text):
-    """Map a pillar name from the AI output to a color key."""
-    if not pillar_text:
-        return "default"
-    p = pillar_text.lower()
-    if any(w in p for w in ["property", "propr", "bien", "listing", "imovel", "imoveis"]):
-        return "property"
-    if any(w in p for w in ["market", "march", "mercado", "insight", "expert", "data"]):
-        return "market"
-    if any(w in p for w in ["behind", "couliss", "bastidor", "scenes", "personal", "marque"]):
-        return "behind"
-    if any(w in p for w in ["lifestyle", "life", "commun", "local", "ville", "quartier"]):
-        return "lifestyle"
-    if any(w in p for w in ["success", "succes", "client", "temoign", "testemunho", "stories"]):
-        return "success"
-    return "default"
-
-
-def parse_calendar_json(content):
-    """Extract and parse JSON data from calendar content (robust)."""
-    # Strategy 1: exact HTML comment markers
-    match = re.search(r'<!--\s*CALENDAR_JSON\s*(.*?)\s*CALENDAR_JSON\s*-->', content, re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group(1))
-        except (json.JSONDecodeError, ValueError):
-            pass
-
-    # Strategy 2: markers without proper HTML comment syntax
-    match = re.search(r'CALENDAR_JSON\s*(\{.*?\})\s*CALENDAR_JSON', content, re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group(1))
-        except (json.JSONDecodeError, ValueError):
-            pass
-
-    # Strategy 3: find any JSON block containing "weeks" key (code fence or raw)
-    for pattern in [
-        r'```json\s*(\{.*?"weeks".*?\})\s*```',
-        r'```\s*(\{.*?"weeks".*?\})\s*```',
-        r'(\{[^{}]*"weeks"\s*:\s*\[.*\]\s*\})',
-    ]:
-        match = re.search(pattern, content, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(1))
-            except (json.JSONDecodeError, ValueError):
-                continue
-
-    return None
-
-
-def get_markdown_content(content):
-    """Return the markdown portion (without the hidden JSON block)."""
-    return re.sub(r'<!--CALENDAR_JSON.*?CALENDAR_JSON-->', '', content, flags=re.DOTALL).strip()
-
-
-MAX_SUBJECT_LEN = 70  # chars shown on card, full text in popover
+MAX_SUBJECT_LEN = 70
 
 
 def _render_day_card(day, week_idx, day_idx):
-    """Render a single modern card (Option E) for one day."""
+    """Render a single modern card for one day."""
     is_rest = day.get("rest", False)
     date_str = day.get("date", "")
     day_num = date_str.split("/")[0].strip() if "/" in date_str else date_str
@@ -250,10 +84,7 @@ def _render_day_card(day, week_idx, day_idx):
         """, unsafe_allow_html=True)
         return
 
-    # Truncate subject for card
     subject_short = (subject[:MAX_SUBJECT_LEN] + "...") if len(subject) > MAX_SUBJECT_LEN else subject
-
-    # Card HTML
     pillar_html = f'<span class="mc-pillar" style="background:{pillar_color}">{pillar}</span>' if pillar else ""
     time_html = f'<span>{time_slot}</span>' if time_slot else "<span></span>"
 
@@ -279,7 +110,6 @@ def _render_day_card(day, week_idx, day_idx):
 
     # Popover with full detail
     with st.popover("Voir le detail", use_container_width=True):
-        # Header: big number + meta
         pcol1, pcol2 = st.columns([1, 4])
         with pcol1:
             st.markdown(f'<div class="pop-num">{day_num}</div>', unsafe_allow_html=True)
@@ -295,11 +125,7 @@ def _render_day_card(day, week_idx, day_idx):
             st.markdown(badges_md, unsafe_allow_html=True)
 
         st.markdown("---")
-
-        # Full subject
         st.markdown(f"**Contenu :** {subject}")
-
-        # Details
         if time_slot:
             st.markdown(f"**Horaire :** {time_slot}")
         if hashtags:
@@ -307,9 +133,8 @@ def _render_day_card(day, week_idx, day_idx):
 
 
 def render_visual_calendar(cal_data):
-    """Render modern card calendar (Option E) with 3 cards per row."""
+    """Render modern card calendar with 3 cards per row."""
 
-    # Legend
     st.markdown("""
     <div class="legend-row">
         <div class="legend-item"><div class="legend-dot" style="background:#E65100"></div>Biens</div>
@@ -328,7 +153,6 @@ def render_visual_calendar(cal_data):
         if not days:
             continue
 
-        # Render cards in rows of 3
         for row_start in range(0, len(days), 3):
             row_days = days[row_start:row_start + 3]
             cols = st.columns(3)
@@ -336,7 +160,6 @@ def render_visual_calendar(cal_data):
                 with cols[col_idx]:
                     _render_day_card(day, week_idx, row_start + col_idx)
 
-        # Stories
         stories = week.get("stories", [])
         if stories:
             stories_html = "".join(f"<li>{s}</li>" for s in stories)
@@ -378,6 +201,12 @@ if "calendar_content" not in st.session_state:
     st.session_state.calendar_content = None
 if "calendar_generating" not in st.session_state:
     st.session_state.calendar_generating = False
+
+# --- RESTORE FROM DB (on refresh) ---
+if st.session_state.calendar_content is None:
+    db_cal = get_latest_calendar()
+    if db_cal:
+        st.session_state.calendar_content = db_cal["calendar_content"]
 
 # --- LOAD PERSONA ---
 st.markdown("##### 1. Profil de communication")
@@ -432,7 +261,6 @@ if st.button(
         st.session_state.calendar_generating = False
         st.stop()
 
-    # Build the user message
     end_date = start_date + timedelta(days=13)
     user_message = f"""Voici le profil de communication de l'agent. Genere un calendrier editorial de 14 jours.
 
@@ -442,10 +270,9 @@ if st.button(
     if focus_theme.strip():
         user_message += f"\n**Theme special a integrer :** {focus_theme.strip()}\n"
 
-    # Inject benchmark preferences if available
     prefs = load_benchmark_from_session()
     if prefs:
-        user_message += f"\n**PREFERENCES DE L'AGENT (Module 1 - Veille) :**\n"
+        user_message += f"\n**PREFERENCES DE L'AGENT (Module 2 - Veille) :**\n"
         user_message += f"- Segment : {prefs.get('segment', 'Non defini')}\n"
         user_message += f"- Localisation : {prefs.get('location', 'Non definie')}\n"
         user_message += f"- Experience : {prefs.get('experience', 'Non definie')}\n"
@@ -458,23 +285,33 @@ if st.button(
 
     messages = [{"role": "user", "content": user_message}]
 
-    with st.spinner("AgentIA planifie votre calendrier editorial... (30-60 secondes)"):
-        response, error = chat_with_claude(
-            messages,
-            calendar_prompt,
-            model=MODEL_PERSONA,
-            max_tokens=8192,
-        )
+    st.info("AgentIA planifie votre calendrier editorial...")
+    cal_placeholder = st.empty()
+    cal_chunks = []
+    for chunk in chat_with_claude_stream(
+        messages,
+        calendar_prompt,
+        model=MODEL_CONVERSATION,
+        max_tokens=8192,
+    ):
+        cal_chunks.append(chunk)
+        cal_placeholder.markdown("".join(cal_chunks))
 
+    response = "".join(cal_chunks)
+    cal_placeholder.empty()
     st.session_state.calendar_generating = False
 
-    if error:
-        st.error(f"Erreur : {error}")
+    if response.startswith("[ERREUR]"):
+        st.error(f"Erreur : {response}")
         st.stop()
 
     st.session_state.calendar_content = response
-    # Auto-save (markdown only, without JSON block)
     save_to_data(get_markdown_content(response), prefix="calendrier", name=agent_name)
+
+    # Save to DB
+    profile = get_active_profile()
+    profile_id = profile["id"] if profile else None
+    save_calendar(profile_id, response, start_date=str(start_date), focus_theme=focus_theme.strip())
     st.rerun()
 
 
@@ -483,19 +320,15 @@ if st.session_state.calendar_content:
     st.markdown("---")
     st.markdown("##### Votre calendrier editorial")
 
-    # Try to parse JSON for visual display
     cal_data = parse_calendar_json(st.session_state.calendar_content)
 
     if cal_data:
-        # Visual display (Option E modern cards)
         render_visual_calendar(cal_data)
 
-        # Expandable full markdown version
         md_content = get_markdown_content(st.session_state.calendar_content)
         with st.expander("Voir la version texte complete", expanded=False):
             st.markdown(md_content)
     else:
-        # Fallback: render raw markdown (old calendars without JSON)
         st.warning("Affichage visuel indisponible (donnees structurees non trouvees). Regenerez le calendrier pour obtenir la vue en cartes.")
         st.markdown(
             f'<div class="persona-output">\n\n{st.session_state.calendar_content}\n\n</div>',
@@ -504,7 +337,6 @@ if st.session_state.calendar_content:
 
     st.markdown("")
 
-    # Download buttons
     col1, col2 = st.columns(2)
     with col1:
         download_content = get_markdown_content(st.session_state.calendar_content) if cal_data else st.session_state.calendar_content
@@ -521,7 +353,6 @@ if st.session_state.calendar_content:
             st.session_state.calendar_content = None
             st.rerun()
 
-    # Cost
     cost, in_tok, out_tok = estimate_cost()
     st.markdown(
         f'<div class="cost-badge">Cout session : ~${cost:.3f} ({in_tok:,} tokens in / {out_tok:,} tokens out)</div>',

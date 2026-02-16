@@ -16,7 +16,13 @@ from datetime import datetime
 APP_TITLE = "AgentIA"
 APP_ICON = "\U0001f3e0"
 MODEL_CONVERSATION = "claude-haiku-4-5-20251001"   # Fast & cheap for Q&A / structured data
-MODEL_PERSONA = "claude-sonnet-4-20250514"          # Quality for complex generation
+MODEL_PERSONA = "claude-sonnet-4-5-20250929"        # Quality for complex generation (Sonnet 4.5)
+
+# --- PRICING per million tokens ---
+MODEL_PRICING = {
+    MODEL_CONVERSATION: {"input": 1.0, "output": 5.0, "cache_read": 0.10, "cache_write": 1.25},
+    MODEL_PERSONA: {"input": 3.0, "output": 15.0, "cache_read": 0.30, "cache_write": 3.75},
+}
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -283,8 +289,69 @@ def check_api_key():
         st.stop()
 
 
+def _track_usage(usage, model):
+    """Track token usage and cost from API response."""
+    model = model or MODEL_CONVERSATION
+    pricing = MODEL_PRICING.get(model, MODEL_PRICING[MODEL_CONVERSATION])
+
+    input_tokens = usage.input_tokens
+    output_tokens = usage.output_tokens
+    cache_read = getattr(usage, "cache_read_input_tokens", 0) or 0
+    cache_write = getattr(usage, "cache_creation_input_tokens", 0) or 0
+
+    st.session_state.setdefault("total_input_tokens", 0)
+    st.session_state.setdefault("total_output_tokens", 0)
+    st.session_state.setdefault("total_cache_read_tokens", 0)
+    st.session_state.setdefault("total_cache_write_tokens", 0)
+    st.session_state.setdefault("total_cost", 0.0)
+
+    st.session_state["total_input_tokens"] += input_tokens
+    st.session_state["total_output_tokens"] += output_tokens
+    st.session_state["total_cache_read_tokens"] += cache_read
+    st.session_state["total_cache_write_tokens"] += cache_write
+
+    # Non-cached input = total input - cache_read - cache_write
+    standard_input = max(0, input_tokens - cache_read - cache_write)
+    cost = (
+        standard_input * pricing["input"] / 1_000_000
+        + cache_read * pricing["cache_read"] / 1_000_000
+        + cache_write * pricing["cache_write"] / 1_000_000
+        + output_tokens * pricing["output"] / 1_000_000
+    )
+    st.session_state["total_cost"] += cost
+
+
+def _build_system_param(system_prompt):
+    """Build system parameter with prompt caching enabled."""
+    return [
+        {
+            "type": "text",
+            "text": system_prompt,
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
+
+
+def _handle_api_error(e):
+    """Map Anthropic exceptions to user-friendly error messages."""
+    if isinstance(e, anthropic.BadRequestError):
+        if "credit balance" in str(e):
+            return "Credits API insuffisants. Rechargez sur console.anthropic.com > Plans & Billing."
+        return f"Erreur API : {e}"
+    if isinstance(e, anthropic.AuthenticationError):
+        return "Cle API invalide. Contactez l'administrateur AgentIA."
+    if isinstance(e, anthropic.RateLimitError):
+        return "Limite de requetes atteinte. Reessayez dans quelques secondes."
+    if isinstance(e, anthropic.APIError):
+        return f"Erreur API Anthropic : {e}"
+    return f"Erreur inattendue : {e}"
+
+
 def chat_with_claude(messages, system_prompt, model=None, max_tokens=None):
-    """Send messages to Claude and get a response. Returns (text, error)."""
+    """Send messages to Claude and get a response. Returns (text, error).
+
+    Prompt caching is enabled automatically on the system prompt.
+    """
     client = get_client()
     if not client:
         return None, "Cle API non configuree. Contactez l'administrateur AgentIA."
@@ -297,36 +364,54 @@ def chat_with_claude(messages, system_prompt, model=None, max_tokens=None):
         response = client.messages.create(
             model=model,
             max_tokens=max_tokens,
-            system=system_prompt,
+            system=_build_system_param(system_prompt),
             messages=api_messages,
         )
-        # Track cost
-        usage = response.usage
-        st.session_state.setdefault("total_input_tokens", 0)
-        st.session_state.setdefault("total_output_tokens", 0)
-        st.session_state["total_input_tokens"] += usage.input_tokens
-        st.session_state["total_output_tokens"] += usage.output_tokens
-
+        _track_usage(response.usage, model)
         return response.content[0].text, None
-    except anthropic.BadRequestError as e:
-        if "credit balance" in str(e):
-            return None, "Credits API insuffisants. Rechargez sur console.anthropic.com > Plans & Billing."
-        return None, f"Erreur API : {e}"
-    except anthropic.AuthenticationError:
-        return None, "Cle API invalide. Contactez l'administrateur AgentIA."
-    except anthropic.RateLimitError:
-        return None, "Limite de requetes atteinte. Reessayez dans quelques secondes."
-    except anthropic.APIError as e:
-        return None, f"Erreur API Anthropic : {e}"
+    except (anthropic.BadRequestError, anthropic.AuthenticationError,
+            anthropic.RateLimitError, anthropic.APIError) as e:
+        return None, _handle_api_error(e)
+
+
+def chat_with_claude_stream(messages, system_prompt, model=None, max_tokens=None):
+    """Stream a response from Claude. Yields text chunks.
+
+    Returns a generator of text chunks. Call list() or iterate to consume.
+    After iteration, check st.session_state for usage tracking.
+    Usage is tracked when the stream completes.
+    """
+    client = get_client()
+    if not client:
+        yield "[ERREUR] Cle API non configuree."
+        return
+
+    model = model or MODEL_CONVERSATION
+    max_tokens = max_tokens or 1024
+    api_messages = [{"role": m["role"], "content": m["content"]} for m in messages]
+
+    try:
+        with client.messages.stream(
+            model=model,
+            max_tokens=max_tokens,
+            system=_build_system_param(system_prompt),
+            messages=api_messages,
+        ) as stream:
+            for text in stream.text_stream:
+                yield text
+            # Track usage after stream completes
+            response = stream.get_final_message()
+            _track_usage(response.usage, model)
+    except (anthropic.BadRequestError, anthropic.AuthenticationError,
+            anthropic.RateLimitError, anthropic.APIError) as e:
+        yield f"[ERREUR] {_handle_api_error(e)}"
 
 
 def estimate_cost():
-    """Estimate API cost based on tracked tokens."""
+    """Return tracked API cost and token counts."""
     input_tokens = st.session_state.get("total_input_tokens", 0)
     output_tokens = st.session_state.get("total_output_tokens", 0)
-    # Blended estimate (mostly Haiku + some Sonnet calls)
-    # Haiku: $0.80/M in, $4/M out | Sonnet: $3/M in, $15/M out
-    cost = (input_tokens * 1.5 / 1_000_000) + (output_tokens * 7 / 1_000_000)
+    cost = st.session_state.get("total_cost", 0.0)
     return cost, input_tokens, output_tokens
 
 
@@ -481,6 +566,43 @@ def save_to_data(content, prefix="output", name="agent"):
     filepath = DATA_DIR / f"{prefix}-{safe_name}-{timestamp}.md"
     filepath.write_text(content, encoding="utf-8")
     return filepath
+
+
+def compress_persona_for_content(persona_content):
+    """Extract only the sections relevant for content generation (reduce tokens ~60%)."""
+    if not persona_content:
+        return ""
+
+    keep_sections = [
+        "PROFIL DE COMMUNICATION",
+        "Identite",
+        "Voix & Ton", "Voix et Ton", "Voice",
+        "Phrases Signatures", "Signature",
+        "Piliers de Contenu", "Piliers", "Content Pillars",
+        "Strategie Hashtags", "Hashtags",
+        "Differentiation", "USP", "Positionnement",
+    ]
+
+    lines = persona_content.split("\n")
+    result = []
+    include = False
+
+    for line in lines:
+        stripped = line.strip()
+        # Check if this is a heading
+        if stripped.startswith("#"):
+            heading_text = stripped.lstrip("#").strip()
+            include = any(s.lower() in heading_text.lower() for s in keep_sections)
+            if include:
+                result.append(line)
+        elif include:
+            result.append(line)
+
+    compressed = "\n".join(result).strip()
+    # Fallback: if compression removed too much, use truncated original
+    if len(compressed) < 200:
+        return persona_content[:3000]
+    return compressed
 
 
 def extract_agent_name(persona_content):

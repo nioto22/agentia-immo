@@ -1,5 +1,5 @@
 """
-AgentIA - Module 1: Veille & Benchmark
+AgentIA - Module 2: Veille & Benchmark
 Market intelligence and content preferences for real estate agents.
 iRL-tech x EPINEXUS - Feb 2026
 """
@@ -23,6 +23,9 @@ from utils import (
     check_api_key,
     save_to_data,
 )
+from db import init_db, save_benchmark, get_latest_benchmark, get_active_profile
+
+init_db()
 
 # --- PAGE CONFIG ---
 st.set_page_config(
@@ -37,7 +40,7 @@ inject_css()
 
 # --- SIDEBAR ---
 render_sidebar(
-    module_name="Module 1 - Veille",
+    module_name="Module 2 - Veille",
     module_help="""
     <p>1. Consultez les chiffres cles du marche</p>
     <p>2. Renseignez votre situation</p>
@@ -49,7 +52,7 @@ render_sidebar(
 # --- HEADER ---
 st.markdown("""
 <div class="agent-header">
-    <div class="agent-badge">Module 1 - Veille & Benchmark</div>
+    <div class="agent-badge">Module 2 - Veille & Benchmark</div>
     <h1>\U0001f50d AgentIA</h1>
     <p>Intelligence de marche et preferences de contenu pour votre strategie</p>
 </div>
@@ -67,6 +70,18 @@ if "benchmark_generating" not in st.session_state:
     st.session_state.benchmark_generating = False
 if "benchmark_preferences" not in st.session_state:
     st.session_state.benchmark_preferences = {}
+
+# --- RESTORE FROM DB (on refresh) ---
+if st.session_state.benchmark_content is None:
+    db_bench = get_latest_benchmark()
+    if db_bench:
+        st.session_state.benchmark_content = db_bench["content"]
+        st.session_state.benchmark_preferences = {
+            "segment": db_bench["segment"],
+            "location": db_bench["location"],
+            "experience": db_bench["experience"],
+            "platforms": db_bench["platforms"],
+        }
 
 # =====================================================
 # SECTION 1 : Chiffres cles du marche
@@ -253,6 +268,11 @@ if st.button(
     # Auto-save
     safe_location = location.strip().lower().replace(" ", "-")[:20] if location else "agent"
     save_to_data(response, prefix="veille", name=safe_location)
+
+    # Save to DB
+    profile = get_active_profile()
+    profile_id = profile["id"] if profile else None
+    save_benchmark(profile_id, segment, location.strip(), experience, platforms, response)
     st.rerun()
 
 
@@ -293,6 +313,6 @@ if st.session_state.benchmark_content:
 
     st.markdown("---")
     st.markdown(
-        "**Prochaine etape :** Utilisez le Module 2 (Profil & Persona) pour creer "
+        "**Prochaine etape :** Utilisez le Module 1 (Profil & Persona) pour creer "
         "votre profil de communication personnalise base sur ces preferences."
     )

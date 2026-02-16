@@ -32,6 +32,7 @@ from utils import (
     classify_pillar,
     parse_calendar_json,
     get_markdown_content,
+    compress_persona_for_content,
     PILLAR_COLORS,
     FORMAT_DIMENSIONS,
 )
@@ -432,7 +433,8 @@ if st.button(
         user_message += f"- Piliers prioritaires : {', '.join(prefs.get('piliers_preferes', []))}\n"
         user_message += "\nAdapte le contenu a ce segment et ces preferences.\n"
 
-    user_message += f"\n---\n\n**PROFIL DE COMMUNICATION DE L'AGENT :**\n\n{persona_content}"
+    compressed_persona = compress_persona_for_content(persona_content)
+    user_message += f"\n---\n\n**PROFIL DE COMMUNICATION DE L'AGENT :**\n\n{compressed_persona}"
 
     messages = [{"role": "user", "content": user_message}]
 

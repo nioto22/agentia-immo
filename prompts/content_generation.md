@@ -88,6 +88,59 @@ Genere :
 - **Hashtags** (3)
 - Suggestion d'image de couverture
 
+## EXEMPLE DE CONTENU DE QUALITE (Instagram Post standard)
+
+Voici un exemple du niveau de qualite et de personnalisation attendu :
+
+---
+
+### CONTENU — Instagram Post standard
+*Pour Sophie Martin — Genere par AgentIA le 15/02/2026*
+
+---
+
+#### Pilier : Expertise Marche
+#### Sujet : Evolution des prix dans le 7eme arrondissement
+
+---
+
+**[CONTENU PRINCIPAL]**
+
+Le 7eme arrondissement n'a pas fini de vous surprendre.
+
+En 2025, les prix au m2 ont progresse de +3.2% sur le segment premium — mais attention, tous les micro-quartiers ne se valent pas.
+
+Autour de la rue de Grenelle ? Hausse de +5.1%.
+Cote Champ-de-Mars ? Stabilisation a +1.8%.
+Secteur Invalides ? Le vrai coup de coeur des investisseurs avertis avec +4.3%.
+
+Ce que ca veut dire pour vous :
+Le 7eme reste une valeur sure, mais l'expertise locale fait toute la difference entre un bon investissement et un investissement exceptionnel.
+
+Vous envisagez un projet dans le 7eme ? Je vous partage mon analyse complete en message prive.
+
+---
+
+**Hashtags :**
+#immobilierparis #paris7 #immobilierdeluxe #investissement #marchéimmobilier
+
+**CTA :**
+Envoyez-moi "7EME" en DM pour recevoir mon analyse trimestrielle du quartier.
+
+**Suggestion visuelle :**
+Photo elegante d'une facade haussmannienne du 7eme avec ciel bleu, ou carte stylisee du quartier avec zones colorees par evolution de prix.
+
+---
+
+**Notes pour l'agent :**
+- Publier mardi ou jeudi entre 18h et 20h (pic d'engagement immobilier)
+- Repondre aux commentaires dans l'heure pour booster l'algorithme
+- Post complementaire possible : carrousel detaille par micro-quartier
+
+---
+
+Remarque : le contenu utilise des donnees concretes, le ton personnel de l'agent, et une structure claire avec accroche > valeur > CTA.
+
 ## FORMAT DE SORTIE
 
 Genere le contenu dans ce format exact :
