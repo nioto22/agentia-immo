@@ -17,7 +17,7 @@ from utils import (
     render_sidebar,
     check_api_key,
 )
-from db import init_db, get_dashboard_summary
+from db import init_db, get_dashboard_summary, get_edit_count
 
 # --- INIT DB ---
 init_db()
@@ -162,16 +162,19 @@ st.markdown("---")
 # =====================================================
 st.markdown("##### Statistiques")
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(label="Posts generes", value=summary["post_count"])
 
 with col2:
+    st.metric(label="Posts edites", value=get_edit_count())
+
+with col3:
     cost_str = f"${summary['total_cost']:.3f}" if summary["total_cost"] > 0 else "$0.000"
     st.metric(label="Cout total API", value=cost_str)
 
-with col3:
+with col4:
     if summary["last_activity"]:
         try:
             last_dt = datetime.fromisoformat(summary["last_activity"])
@@ -189,7 +192,7 @@ st.markdown("---")
 # =====================================================
 st.markdown("##### Modules")
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.page_link("pages/1_\U0001f3af_Profil.py", label="Profil", icon="\U0001f3af", use_container_width=True)
@@ -199,6 +202,8 @@ with col3:
     st.page_link("pages/3_\U0001f4c5_Calendrier.py", label="Calendrier", icon="\U0001f4c5", use_container_width=True)
 with col4:
     st.page_link("pages/4_\u270f\ufe0f_Contenu.py", label="Contenu", icon="\u270f\ufe0f", use_container_width=True)
+with col5:
+    st.page_link("pages/5_\U0001f4dd_Editeur.py", label="Editeur", icon="\U0001f4dd", use_container_width=True)
 
 st.markdown("")
 st.caption("iRL-tech x EPINEXUS | AgentIA v0.3")

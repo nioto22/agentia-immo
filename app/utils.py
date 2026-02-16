@@ -488,6 +488,7 @@ def render_sidebar(module_name="", module_help=""):
         st.page_link("pages/2_\U0001f50d_Veille.py", label="2. Veille & Benchmark", icon="\U0001f50d")
         st.page_link("pages/3_\U0001f4c5_Calendrier.py", label="3. Calendrier Editorial", icon="\U0001f4c5")
         st.page_link("pages/4_\u270f\ufe0f_Contenu.py", label="4. Creation de Contenu", icon="\u270f\ufe0f")
+        st.page_link("pages/5_\U0001f4dd_Editeur.py", label="5. Editeur de Posts", icon="\U0001f4dd")
 
         st.divider()
 

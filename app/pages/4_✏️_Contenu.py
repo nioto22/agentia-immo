@@ -38,7 +38,7 @@ from utils import (
 )
 from previews import render_social_preview, parse_generated_content
 import streamlit.components.v1 as components
-from db import init_db, save_post, get_active_profile, get_latest_calendar
+from db import init_db, save_post, get_active_profile, get_latest_calendar, get_recent_posts
 
 init_db()
 
@@ -119,6 +119,7 @@ def select_calendar_day(day_data):
     st.session_state.prefill_format = fmt
     st.session_state.prefill_topic = subject
     st.session_state.prefill_pillar = pillar
+    st.session_state.scroll_to_params = True
 
 
 def render_calendar_picker(cal_data):
@@ -293,7 +294,18 @@ else:
 st.markdown("---")
 
 # --- CONTENT OPTIONS (with prefill from calendar) ---
+st.markdown('<div id="parametres-contenu"></div>', unsafe_allow_html=True)
 st.markdown("##### 2. Parametres du contenu")
+
+# Auto-scroll after calendar day selection
+if st.session_state.pop("scroll_to_params", False):
+    components.html(
+        """<script>
+        window.parent.document.querySelector('[id="parametres-contenu"]')
+            ?.scrollIntoView({behavior: 'smooth', block: 'start'});
+        </script>""",
+        height=0,
+    )
 
 prefill_platform = st.session_state.get("prefill_platform", None)
 prefill_format = st.session_state.get("prefill_format", None)
@@ -537,7 +549,7 @@ if st.session_state.generated_posts:
                 st.caption(f"Visuel : {parsed['visual_suggestion']}")
 
             # Action buttons
-            col_dl, col_copy = st.columns(2)
+            col_dl, col_copy, col_edit = st.columns(3)
             with col_dl:
                 st.download_button(
                     label="Telecharger (.md)",
@@ -556,6 +568,20 @@ if st.session_state.generated_posts:
                     use_container_width=True,
                     key=f"txt_{i}",
                 )
+            with col_edit:
+                if st.button("Editer ce post", key=f"edit_post_{i}", use_container_width=True):
+                    # Find matching post ID in DB
+                    db_posts = get_recent_posts(limit=50)
+                    matched_id = None
+                    for db_post in db_posts:
+                        if (db_post["platform"] == post["platform"]
+                                and db_post["topic"] == post["topic"]
+                                and db_post["content"][:100] == post["content"][:100]):
+                            matched_id = db_post["id"]
+                            break
+                    if matched_id:
+                        st.session_state.editor_post_id_prefill = matched_id
+                        st.switch_page("pages/5_\U0001f4dd_Editeur.py")
 
     # Batch download
     st.markdown("---")

@@ -81,6 +81,20 @@ def init_db():
             output_tokens INTEGER DEFAULT 0,
             estimated_cost REAL DEFAULT 0.0
         );
+
+        CREATE TABLE IF NOT EXISTS post_edits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            post_id INTEGER NOT NULL UNIQUE,
+            caption TEXT NOT NULL,
+            hashtags TEXT DEFAULT '',
+            cta TEXT DEFAULT '',
+            image_path TEXT DEFAULT '',
+            image_prompt TEXT DEFAULT '',
+            platform_captions TEXT DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (post_id) REFERENCES posts(id)
+        );
     """)
     conn.commit()
     conn.close()
@@ -262,6 +276,119 @@ def get_post_count(profile_id=None):
         row = conn.execute("SELECT COUNT(*) as cnt FROM posts WHERE profile_id = ?", (profile_id,)).fetchone()
     else:
         row = conn.execute("SELECT COUNT(*) as cnt FROM posts").fetchone()
+    conn.close()
+    return row["cnt"]
+
+
+# --- POST EDITS ---
+
+def get_post_by_id(post_id: int):
+    """Get a single post by its ID, or None."""
+    conn = _get_conn()
+    row = conn.execute("SELECT * FROM posts WHERE id = ?", (post_id,)).fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "id": row["id"],
+        "profile_id": row["profile_id"],
+        "platform": row["platform"],
+        "format": row["format"],
+        "topic": row["topic"],
+        "content": row["content"],
+        "model_used": row["model_used"],
+        "created_at": row["created_at"],
+    }
+
+
+def save_post_edit(post_id, caption, hashtags, cta, image_path="", image_prompt="", platform_captions=None):
+    """Save or update an edit for a post (upsert). Returns the edit id."""
+    conn = _get_conn()
+    now = datetime.now().isoformat()
+    captions_json = json.dumps(platform_captions or {}, ensure_ascii=False)
+    cursor = conn.execute(
+        """INSERT OR REPLACE INTO post_edits
+           (post_id, caption, hashtags, cta, image_path, image_prompt, platform_captions, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?,
+                   COALESCE((SELECT created_at FROM post_edits WHERE post_id = ?), ?),
+                   ?)""",
+        (post_id, caption, hashtags, cta, image_path, image_prompt, captions_json, post_id, now, now),
+    )
+    edit_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return edit_id
+
+
+def get_post_edit(post_id: int):
+    """Get the saved edit for a post, or None. Deserializes platform_captions JSON."""
+    conn = _get_conn()
+    row = conn.execute("SELECT * FROM post_edits WHERE post_id = ?", (post_id,)).fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "id": row["id"],
+        "post_id": row["post_id"],
+        "caption": row["caption"],
+        "hashtags": row["hashtags"],
+        "cta": row["cta"],
+        "image_path": row["image_path"],
+        "image_prompt": row["image_prompt"],
+        "platform_captions": json.loads(row["platform_captions"]) if row["platform_captions"] else {},
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
+def get_posts_for_editor(limit=50, profile_id=None, platform=None, search=None):
+    """Get posts for the editor sidebar with has_edit flag.
+
+    LEFT JOIN post_edits to add a has_edit boolean.
+    Filters by profile_id, platform, and topic search.
+    """
+    conn = _get_conn()
+    query = """
+        SELECT p.id, p.platform, p.format, p.topic, p.created_at,
+               CASE WHEN pe.id IS NOT NULL THEN 1 ELSE 0 END as has_edit
+        FROM posts p
+        LEFT JOIN post_edits pe ON pe.post_id = p.id
+        WHERE 1=1
+    """
+    params = []
+
+    if profile_id:
+        query += " AND p.profile_id = ?"
+        params.append(profile_id)
+    if platform and platform != "Toutes":
+        query += " AND p.platform = ?"
+        params.append(platform)
+    if search:
+        query += " AND p.topic LIKE ?"
+        params.append(f"%{search}%")
+
+    query += " ORDER BY p.id DESC LIMIT ?"
+    params.append(limit)
+
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return [
+        {
+            "id": row["id"],
+            "platform": row["platform"],
+            "format": row["format"],
+            "topic": row["topic"],
+            "created_at": row["created_at"],
+            "has_edit": bool(row["has_edit"]),
+        }
+        for row in rows
+    ]
+
+
+def get_edit_count():
+    """Get total number of edited posts."""
+    conn = _get_conn()
+    row = conn.execute("SELECT COUNT(*) as cnt FROM post_edits").fetchone()
     conn.close()
     return row["cnt"]
 
