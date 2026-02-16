@@ -13,6 +13,7 @@ from pathlib import Path
 from datetime import datetime
 
 # --- CONFIG ---
+# Static defaults (overridden by domain config at runtime)
 APP_TITLE = "AgentIA"
 APP_ICON = "\U0001f3e0"
 MODEL_CONVERSATION = "claude-haiku-4-5-20251001"   # Fast & cheap for Q&A / structured data
@@ -26,6 +27,28 @@ MODEL_PRICING = {
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 DATA_DIR = Path(__file__).parent.parent / "data"
+
+# --- DOMAIN CONFIG (lazy loaded) ---
+def _get_domain():
+    """Get domain config lazily (avoids circular imports)."""
+    from domain_loader import get_domain
+    return get_domain()
+
+
+def get_app_title():
+    """Get app title from domain config."""
+    try:
+        return _get_domain().app_name
+    except Exception:
+        return APP_TITLE
+
+
+def get_app_icon():
+    """Get app icon from domain config."""
+    try:
+        return _get_domain().icon
+    except Exception:
+        return APP_ICON
 
 # --- CUSTOM CSS (copper theme) ---
 AGENTIA_CSS = """
@@ -206,9 +229,27 @@ CALENDAR_CARD_CSS = """
 """
 
 
-# --- PILLAR COLORS (shared between Calendrier and Contenu) ---
-# --- FORMAT DIMENSIONS (shown as badge in Contenu module) ---
-FORMAT_DIMENSIONS = {
+# --- PILLAR COLORS / LABELS / FORMAT DIMENSIONS ---
+# These are now loaded from domain config with hardcoded fallbacks.
+
+_FALLBACK_PILLAR_COLORS = {
+    "property": "#E65100",
+    "market": "#1565C0",
+    "behind": "#6A1B9A",
+    "lifestyle": "#2E7D32",
+    "success": "#F9A825",
+    "default": "#827568",
+}
+
+_FALLBACK_PILLAR_LABELS = {
+    "property": "Biens & Proprietes",
+    "market": "Expertise Marche",
+    "behind": "Coulisses",
+    "lifestyle": "Lifestyle",
+    "success": "Succes Clients",
+}
+
+_FALLBACK_FORMAT_DIMENSIONS = {
     ("Instagram", "Post standard"): "1080 x 1440 px (3:4)",
     ("Instagram", "Carrousel"): "1080 x 1440 px x N slides",
     ("Instagram", "Reel"): "1080 x 1920 px (9:16)",
@@ -222,22 +263,32 @@ FORMAT_DIMENSIONS = {
 }
 
 
-PILLAR_COLORS = {
-    "property": "#E65100",
-    "market": "#1565C0",
-    "behind": "#6A1B9A",
-    "lifestyle": "#2E7D32",
-    "success": "#F9A825",
-    "default": "#827568",
-}
+def get_pillar_colors():
+    try:
+        return _get_domain().pillar_colors
+    except Exception:
+        return _FALLBACK_PILLAR_COLORS
 
-PILLAR_LABELS = {
-    "property": "Biens & Proprietes",
-    "market": "Expertise Marche",
-    "behind": "Coulisses",
-    "lifestyle": "Lifestyle",
-    "success": "Succes Clients",
-}
+
+def get_pillar_labels():
+    try:
+        return _get_domain().pillar_labels
+    except Exception:
+        return _FALLBACK_PILLAR_LABELS
+
+
+def get_format_dimensions():
+    try:
+        return _get_domain().format_dimensions
+    except Exception:
+        return _FALLBACK_FORMAT_DIMENSIONS
+
+
+# Backwards-compatible module-level aliases (read at import time, won't update dynamically)
+# Pages should prefer the get_* functions for dynamic loading.
+PILLAR_COLORS = _FALLBACK_PILLAR_COLORS
+PILLAR_LABELS = _FALLBACK_PILLAR_LABELS
+FORMAT_DIMENSIONS = _FALLBACK_FORMAT_DIMENSIONS
 
 
 def inject_css():
@@ -251,7 +302,18 @@ def inject_calendar_css():
 
 
 def load_prompt(filename):
-    """Load a prompt file from the prompts directory."""
+    """Load a rendered prompt from domain config, with file fallback."""
+    # Try domain config first (rendered Jinja2 templates)
+    try:
+        domain = _get_domain()
+        key = filename.replace(".md", "").replace(".j2", "")
+        prompt = domain.get_prompt(key)
+        if prompt:
+            return prompt
+    except Exception:
+        pass
+
+    # Fallback to raw file
     path = PROMPTS_DIR / filename
     if path.exists():
         return path.read_text(encoding="utf-8")
@@ -445,19 +507,27 @@ def render_sidebar(module_name="", module_help=""):
 # --- SHARED CALENDAR FUNCTIONS (used by Calendrier + Contenu) ---
 
 def classify_pillar(pillar_text):
-    """Map a pillar name from the AI output to a color key."""
+    """Map a pillar name from the AI output to a color key using domain config."""
     if not pillar_text:
         return "default"
     p = pillar_text.lower()
-    if any(w in p for w in ["property", "propr", "bien", "listing", "imovel", "imoveis"]):
+    try:
+        keywords = _get_domain().pillar_keywords
+        for key, words in keywords.items():
+            if any(w in p for w in words):
+                return key
+    except Exception:
+        pass
+    # Hardcoded fallback
+    if any(w in p for w in ["property", "propr", "bien", "listing"]):
         return "property"
-    if any(w in p for w in ["market", "march", "mercado", "insight", "expert", "data"]):
+    if any(w in p for w in ["market", "march", "insight", "expert"]):
         return "market"
-    if any(w in p for w in ["behind", "couliss", "bastidor", "scenes", "personal", "marque"]):
+    if any(w in p for w in ["behind", "couliss", "scenes", "personal"]):
         return "behind"
-    if any(w in p for w in ["lifestyle", "life", "commun", "local", "ville", "quartier"]):
+    if any(w in p for w in ["lifestyle", "life", "commun", "local"]):
         return "lifestyle"
-    if any(w in p for w in ["success", "succes", "client", "temoign", "testemunho", "stories"]):
+    if any(w in p for w in ["success", "succes", "client", "temoign"]):
         return "success"
     return "default"
 

@@ -1,0 +1,202 @@
+# domains/immobilier/domain.yaml
+# AgentIA — Domain Pack : Immobilier France
+
+# --- Identite du domaine ---
+domain:
+  id: "immobilier"
+  name: "Immobilier"
+  description: "l'immobilier en France"
+  professional_title: "agent immobilier"
+  professional_title_plural: "agents immobiliers"
+  icon: "\U0001F3E0"
+  language: "fr"
+  country: "France"
+
+# --- App branding ---
+app:
+  name: "AgentIA"
+  tagline: "Communication immobiliere IA"
+  page_subtitle: "Creez votre profil de communication immobiliere en 10 minutes"
+
+# --- Segments de marche ---
+segments:
+  - "Residentiel"
+  - "Luxe"
+  - "Investissement"
+  - "Commercial"
+
+# --- Piliers de contenu ---
+pillars:
+  - key: "property"
+    label: "Biens & Proprietes"
+    description: "annonces, visites, staging"
+    color: "#E65100"
+    keywords: ["property", "propr", "bien", "listing", "imovel", "imoveis"]
+    percentage: 25
+  - key: "market"
+    label: "Expertise Marche"
+    description: "tendances, prix, guides quartier"
+    color: "#1565C0"
+    keywords: ["market", "march", "mercado", "insight", "expert", "data"]
+    percentage: 25
+  - key: "behind"
+    label: "Coulisses"
+    description: "coulisses, valeurs, parcours"
+    color: "#6A1B9A"
+    keywords: ["behind", "couliss", "bastidor", "scenes", "personal", "marque"]
+    percentage: 20
+  - key: "success"
+    label: "Succes Clients"
+    description: "temoignages, celebrations, avis"
+    color: "#F9A825"
+    keywords: ["success", "succes", "client", "temoign", "testemunho", "stories"]
+    percentage: 15
+  - key: "lifestyle"
+    label: "Communaute & Lifestyle"
+    description: "evenements, restaurants, quartiers"
+    color: "#2E7D32"
+    keywords: ["lifestyle", "life", "commun", "local", "ville", "quartier"]
+    percentage: 15
+
+# --- Formats de contenu ---
+formats:
+  content_types:
+    - "Carrousels educatifs"
+    - "Reels / Videos courtes"
+    - "Stories interactives"
+    - "Posts standard"
+    - "Articles longs"
+    - "Lives / Tours virtuels"
+  platform_formats:
+    Instagram: ["Post standard", "Carrousel", "Reel", "Story"]
+    LinkedIn: ["Post standard", "Carrousel", "Article"]
+    Facebook: ["Post standard", "Reel", "Story"]
+  format_dimensions:
+    Instagram_Post standard: "1080 x 1440 px (3:4)"
+    Instagram_Carrousel: "1080 x 1440 px x N slides"
+    Instagram_Reel: "1080 x 1920 px (9:16)"
+    Instagram_Story: "1080 x 1920 px (9:16)"
+    LinkedIn_Post standard: "1200 x 628 px (1.91:1)"
+    LinkedIn_Carrousel: "1080 x 1080 px (PDF)"
+    LinkedIn_Article: "1200 x 628 px (cover)"
+    Facebook_Post standard: "1200 x 630 px (1.91:1)"
+    Facebook_Reel: "1080 x 1920 px (9:16)"
+    Facebook_Story: "1080 x 1920 px (9:16)"
+  format_map:
+    carrousel: "Carrousel"
+    carousel: "Carrousel"
+    reel: "Reel"
+    reels: "Reel"
+    story: "Story"
+    stories: "Story"
+    article: "Article"
+    post: "Post standard"
+    post standard: "Post standard"
+    post texte: "Post standard"
+    post data: "Post standard"
+    video: "Reel"
+    video tour: "Reel"
+    video temoignage: "Reel"
+    infographie: "Post standard"
+
+# --- Donnees marche ---
+market_data:
+  stats:
+    - label: "Professionnels sans IA"
+      value: "72%"
+      help: "72% des agents independants n'utilisent pas l'IA pour les reseaux sociaux (2025)"
+    - label: "Engagement IA"
+      value: "+30%"
+      help: "Les agents utilisant l'IA voient +30% d'engagement"
+    - label: "Impact video"
+      value: "+403%"
+      help: "Les proprietes avec video recoivent 403% plus de demandes"
+    - label: "Carrousels"
+      value: "4.1%"
+      help: "Taux d'engagement moyen des carrousels Instagram"
+
+  sources: "Enquete agents independants 2025, etudes engagement reseaux sociaux immobilier"
+
+  insights:
+    - "72% des agents independants n'utilisent pas l'IA pour les reseaux"
+    - "+30% engagement et +18% contacts pour ceux qui utilisent l'IA"
+    - "Proprietes avec video = 403% plus de demandes"
+    - "Carrousels Instagram = meilleur taux d'engagement (4.1%)"
+    - "Marche francais : enormes opportunites — meilleurs agents = 5K-100K followers"
+    - "Constance > volume : 3 posts/semaine reguliers bat 10 posts puis silence"
+
+  hashtags:
+    primary: ["#immobilier", "#immo", "#realestate", "#france", "#immobilierfrance"]
+    market: ["#achatimmobilier", "#vendremamaison", "#investissementimmobilier"]
+    location: ["#paris", "#lyon", "#bordeaux", "#marseille"]
+    professional: ["#agentimmobilier", "#conseillerimmobilier", "#mandataire"]
+
+  competitors:
+    - name: "RealEstateContent.ai"
+      price: "$99/mois"
+      description: "Posts illimites, calendrier, auto-posting. US uniquement."
+    - name: "Outbrand"
+      price: "Variable"
+      description: "Calendriers 30 jours multi-plateformes. Generique."
+
+  top_accounts:
+    - name: "Stephane Plaza"
+      handle: "@stephaneplaza_off"
+      followers: "1M+"
+      description: "Personnalite TV, contenu humoristique et educatif"
+    - name: "Julien Raffin"
+      handle: "@julienraffin_immobilier"
+      followers: "50K+"
+      description: "Education immobiliere, investissement, conseils achat"
+
+# --- UI labels ---
+ui:
+  location_placeholder: "Ex: Paris, Lyon, Bordeaux..."
+  location_label: "Localisation"
+  experience_label: "Experience"
+  experience_help: "Votre niveau d'experience en immobilier"
+  experience_options:
+    - "Debutant (< 2 ans)"
+    - "Intermediaire (2-7 ans)"
+    - "Expert (7+ ans)"
+  segment_label: "Segment de marche"
+  segment_help: "Votre specialisation principale"
+  social_profile_placeholder: "Ex: Agent immobilier specialise dans le luxe a Paris depuis 8 ans. Passionne par l'architecture haussmannienne et le design..."
+  calendar_theme_placeholder: "Ex: Lancement printemps, Nouvelle propriete..."
+  content_topic_placeholder: "Ex: 5 erreurs a eviter lors d'un achat immobilier a Paris\nOu: Presentation d'un appartement haussmannien dans le 7eme\nOu: Coulisses d'une journee de visites avec mes clients"
+  content_pillar_placeholder: "Ex: Education Luxe, Storytelling..."
+  content_instructions_placeholder: "Ex: Mentionner le quartier du Marais, inclure un prix, parler d'une promo..."
+  user_avatar: "\U0001F3E0"
+
+# --- Interview ---
+interview:
+  phases:
+    - name: "Brise-glace"
+      questions: 2
+      topics: "prenom, agence/localisation/experience"
+    - name: "Marche"
+      questions: 3
+      topics: "specialite, clientele type, zone geographique, gamme de prix"
+    - name: "Identite"
+      questions: 3
+      topics: "differentiation/USP, valeurs, '3 mots' de ses clients"
+    - name: "Communication actuelle"
+      questions: 2
+      topics: "reseaux utilises, freins actuels"
+    - name: "Vision"
+      questions: 3
+      topics: "objectif communication, ton prefere, inspiration"
+
+  special_cases:
+    debutant: "valorise la construction progressive, recommande 1 seule plateforme"
+    zero_presence: "Vous avez l'experience, il manque juste la vitrine"
+    deja_actif: "optimise l'existant plutot que refonte"
+
+# --- Demo profiles ---
+demo_profiles:
+  - label: "Sophie Martin \u2014 Luxe, Paris 6e/7e/16e"
+    file: "demo-sophie-martin-persona.md"
+  - label: "Marc Dupont \u2014 Residentiel, Ile-de-France"
+    file: "demo-marc-dupont-persona.md"
+  - label: "Claire & Thomas Moreau \u2014 Investissement, Lyon"
+    file: "demo-claire-thomas-moreau-persona.md"
